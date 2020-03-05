@@ -1,0 +1,39 @@
+createPartner:
+  handler: src/endpoint/partner.createPartner
+  events:
+    - http:
+        path: partner
+        method: put
+
+readPartner:
+  handler: src/endpoint/partner.readPartner
+  events:
+    - http:
+        method: get
+        path: partner/{partnerID}
+        request:
+          parameters:
+            paths:
+              partnerID: true
+
+updatePartner:
+  handler: src/endpoint/partner.updatePartner
+  events:
+    - http:
+        method: post
+        path: partner/{partnerID}
+        request:
+          parameters:
+            paths:
+              partnerID: true
+
+updateImages:
+  handler: src/endpoint/partner.updateImages
+  events:
+    - http:
+        method: post
+        path: partner/{partnerID}/image
+        request:
+          parameters:
+            paths:
+              partnerID: true

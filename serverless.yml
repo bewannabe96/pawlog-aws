@@ -9,21 +9,9 @@ custom:
     includeModules: true
   serverless-offline:
     httpPort: 4000
-  dynamodb:
-    stages:
-      - dev
-    start:
-      port: 8000
-      inMemory: true
-      heapInitial: 200m
-      heapMax: 1g
-      migrate: true
-      seed: true
-      convertEmptyValues: true
 
 plugins:
   - serverless-webpack
-  - serverless-dynamodb-local
   - serverless-offline
 
 provider:
@@ -35,26 +23,13 @@ provider:
     minimumCompressionSize: 1024
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
-    USER_TABLE: ${self:resources.Resources.UserTable.Properties.TableName}
-    PETSHOP_TABLE: ${self:resources.Resources.PetshopTable.Properties.TableName}
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - dynamodb:DescribeTable
-        - dynamodb:Query
-        - dynamodb:Scan
-        - dynamodb:GetItem
-        - dynamodb:PutItem
-        - dynamodb:UpdateItem
-        - dynamodb:DeleteItem
-      Resource:
-        - 'Fn::GetAtt': [UserTable, Arn]
-        - 'Fn::GetAtt': [PetshopTable, Arn]
+    DB_HOST: 127.0.0.1
+    DB_NAME: Pawlog
+    DB_USER: root
+    DB_PSWD: godqhrgkwk
 
 resources:
   Resources:
-    UserTable: ${file(./resource/dynamodb/user-table.yml)}
-    PetshopTable: ${file(./resource/dynamodb/petshop-table.yml)}
 
 functions:
-  - ${file(./resource/function/petshop.yml)}
+  - ${file(./resource/function/partner.yml)}
