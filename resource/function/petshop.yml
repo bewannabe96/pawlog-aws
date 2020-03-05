@@ -1,0 +1,28 @@
+createPetshop:
+  handler: src/endpoint/petshop.createPetshop
+  events:
+    - http:
+        path: petshop
+        method: put
+
+readPetshop:
+  handler: src/endpoint/petshop.readPetshop
+  events:
+    - http:
+        method: get
+        path: petshop/{petshopID}
+        request:
+          parameters:
+            paths:
+              petshopID: true
+
+updatePetshop:
+  handler: src/endpoint/petshop.updatePetshop
+  events:
+    - http:
+        method: post
+        path: petshop/{petshopID}
+        request:
+          parameters:
+            paths:
+              petshopID: true
