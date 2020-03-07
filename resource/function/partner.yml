@@ -1,3 +1,10 @@
+readPartnerList:
+  handler: src/endpoint/partner.readPartnerList
+  events:
+    - http:
+        path: partner
+        method: get
+
 createPartner:
   handler: src/endpoint/partner.createPartner
   events:

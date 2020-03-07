@@ -8,11 +8,32 @@ import PartnerImageDBManager from '../database-manager/partner-image';
 
 import { createResponse } from '../util/response';
 
-export const createPartner: APIGatewayProxyHandler = async event => {
-	const partner: Partner = JSON.parse(event.body);
+export const readPartnerList: APIGatewayProxyHandler = async event => {
+	const type = event.queryStringParameters?.type
+		? parseInt(event.queryStringParameters.type)
+		: 0;
+	const page = event.queryStringParameters?.page
+		? parseInt(event.queryStringParameters.page)
+		: 1;
 
 	try {
-		const id = await PartnerDBManager.createPartner(partner);
+		const [total, partners] = await Promise.all([
+			PartnerDBManager.countPartners(type),
+			PartnerDBManager.reatPartners(type, page),
+		]);
+
+		return createResponse(200, { total: total, partners: partners });
+	} catch (e) {
+		console.log(e);
+		return createResponse(500, {});
+	}
+};
+
+export const createPartner: APIGatewayProxyHandler = async event => {
+	const parsedBody = JSON.parse(event.body);
+
+	try {
+		const id = await PartnerDBManager.createPartner(parsedBody as Partner);
 		return createResponse(200, { id: id });
 	} catch (e) {
 		console.log(e);

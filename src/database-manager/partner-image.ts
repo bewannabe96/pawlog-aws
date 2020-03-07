@@ -25,7 +25,7 @@ namespace PartnerImageDBManager {
 			mysqlConn.end();
 		}
 
-		return result[0].map((packet: any) => packet.identifier);
+		return result[0].map((row: any) => row.identifier);
 	};
 
 	export const updateImages = async (
