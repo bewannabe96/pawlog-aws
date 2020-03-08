@@ -32,4 +32,5 @@ resources:
   Resources:
 
 functions:
+  - ${file(./resource/function/config.yml)}
   - ${file(./resource/function/partner.yml)}

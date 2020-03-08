@@ -1,0 +1,13 @@
+readAreas:
+  handler: src/endpoint/config.readAreas
+  events:
+    - http:
+        path: config/area
+        method: get
+
+readPartnerTypes:
+  handler: src/endpoint/config.readPartnerTypes
+  events:
+    - http:
+        path: config/partnerType
+        method: get

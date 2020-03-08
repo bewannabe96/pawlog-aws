@@ -80,20 +80,17 @@ namespace PartnerDBManager {
 	export const readPartner = async (
 		partnerID: string,
 	): Promise<PartnerEntity> => {
-		let transaction: mysql.Transaction = mysqlConn.transaction();
-
-		transaction = transaction.query('SELECT * FROM partner WHERE id=?;', [
-			partnerID,
-		]);
+		const query = 'SELECT * FROM partner WHERE id=?;';
+		const queryValues = [partnerID];
 
 		let result: any;
 		try {
-			result = await transaction.commit();
+			result = await mysqlConn.query<any>(query, queryValues);
 		} finally {
 			mysqlConn.end();
 		}
 
-		return result[0][0] as PartnerEntity;
+		return result[0] as PartnerEntity;
 	};
 
 	export const updatePartner = async (
