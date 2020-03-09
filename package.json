@@ -2,6 +2,7 @@
 	"name": "pawlog-aws",
 	"version": "1.0.0",
 	"description": "Serverless webpack example using Typescript",
+	"repository": "https://github.com/rnjssh96/pawlog-aws.git",
 	"main": "handler.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
@@ -20,7 +21,7 @@
 		"@types/node": "^13.9.0",
 		"fork-ts-checker-webpack-plugin": "^4.0.5",
 		"serverless": "^1.66.0",
-		"serverless-offline": "^5.12.1",
+		"serverless-offline": "^6.0.0-alpha.67",
 		"serverless-webpack": "^5.3.1",
 		"ts-loader": "^6.2.1",
 		"webpack": "^4.42.0",
