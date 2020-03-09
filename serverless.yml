@@ -21,15 +21,32 @@ provider:
   region: ap-southeast-1
   apiGateway:
     minimumCompressionSize: 1024
+  vpc:
+    securityGroupIds:
+      - Ref: PawlogSecurityGroup
+    subnetIds:
+      - Ref: PrivateSubnetA
+      - Ref: PrivateSubnetB
+      - Ref: PrivateSubnetC
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
-    DB_HOST: 127.0.0.1
-    DB_NAME: Pawlog
-    DB_USER: root
+    # DB_HOST: 127.0.0.1
+    DB_HOST: !GetAtt PawlogRDS.Endpoint.Address
+    DB_NAME: pawlog
+    DB_USER: admin
     DB_PSWD: godqhrgkwk
 
 resources:
-  Resources:
+  - ${file(./resource/vpc.yml)}
+  - ${file(./resource/security-group.yml)}
+  - ${file(./resource/subnet.yml)}
+  - ${file(./resource/route-table.yml)}
+
+  - ${file(./resource/nat-gateway.yml)}
+  - ${file(./resource/internet-gateway.yml)}
+
+  - ${file(./resource/rds.yml)}
+  - ${file(./resource/partner-image-s3.yml)}
 
 functions:
   - ${file(./resource/function/config.yml)}

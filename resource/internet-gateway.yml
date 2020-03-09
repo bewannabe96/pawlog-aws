@@ -1,0 +1,17 @@
+Resources:
+  PawlogVPCInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: PawlogVPCInternetGateway
+
+  IGRoute:
+    Type: AWS::EC2::Route
+    DependsOn: PawlogVPCInternetGateway
+    Properties:
+      RouteTableId:
+        Ref: PublicSubnet
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: PawlogVPCInternetGateway

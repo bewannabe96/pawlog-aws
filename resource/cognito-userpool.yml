@@ -1,15 +1,16 @@
-Type: 'AWS::Cognito::UserPool'
-Properties:
-  MfaConfiguration: OFF
-  UserPoolName: PawlogUserPool
-  UsernameAttributes:
-    - email
-  AutoVerifiedAttributes:
-    - email
-  Policies:
-    PasswordPolicy:
-      MinimumLength: 8
-      RequireLowercase: True
-      RequireNumbers: True
-      RequireSymbols: False
-      RequireUppercase: True
+Resources:
+  Type: 'AWS::Cognito::UserPool'
+  Properties:
+    MfaConfiguration: OFF
+    UserPoolName: PawlogUserPool
+    UsernameAttributes:
+      - email
+    AutoVerifiedAttributes:
+      - email
+    Policies:
+      PasswordPolicy:
+        MinimumLength: 8
+        RequireLowercase: True
+        RequireNumbers: True
+        RequireSymbols: False
+        RequireUppercase: True

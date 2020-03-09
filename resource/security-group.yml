@@ -1,0 +1,20 @@
+Resources:
+  PawlogSecurityGroup:
+    DependsOn: PawlogVPC
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group of Pawlog VPC
+      VpcId:
+        Ref: PawlogVPC
+      Tags:
+        - Key: Name
+          Value: PawlogSecurityGroup
+
+  PawlogSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref: PawlogSecurityGroup
+      SourceSecurityGroupId:
+        Ref: PawlogSecurityGroup
+      IpProtocol: -1

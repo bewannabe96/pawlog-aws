@@ -1,0 +1,23 @@
+Resources:
+  NATElasticIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  NATGateway:
+    Type: AWS::EC2::NatGateway
+    DependsOn: NATElasticIP
+    Properties:
+      AllocationId: !GetAtt NATElasticIP.AllocationId
+      SubnetId:
+        Ref: PublicSubnet
+
+  NATRoute:
+    Type: AWS::EC2::Route
+    DependsOn: NATGateway
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: NATGateway
