@@ -17,12 +17,16 @@ export const readPartnerList: APIGatewayProxyHandler = async event => {
 		: 1;
 
 	try {
-		const [total, partners] = await Promise.all([
-			PartnerDBManager.countPartners(type),
+		const [maxPage, partners] = await Promise.all([
+			PartnerDBManager.countMaxPage(type),
 			PartnerDBManager.reatPartners(type, page),
 		]);
 
-		return createResponse(200, { total: total, partners: partners });
+		return createResponse(200, {
+			currentPage: page,
+			maxPage: maxPage,
+			partners: partners,
+		});
 	} catch (e) {
 		console.log(e);
 		return createResponse(500, {});

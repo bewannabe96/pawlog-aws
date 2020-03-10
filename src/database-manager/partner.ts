@@ -13,7 +13,7 @@ const mysqlConn: mysql.ServerlessMysql = mysql({
 });
 
 namespace PartnerDBManager {
-	export const countPartners = async (type: number): Promise<number> => {
+	export const countMaxPage = async (type: number): Promise<number> => {
 		const query =
 			type > 0
 				? 'SELECT count(id) AS total FROM partner WHERE type=?;'
@@ -27,7 +27,7 @@ namespace PartnerDBManager {
 			mysqlConn.end();
 		}
 
-		return result[0].total;
+		return Math.ceil(result[0].total / 10);
 	};
 
 	export const reatPartners = async (
