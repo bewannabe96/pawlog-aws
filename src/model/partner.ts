@@ -1,8 +1,11 @@
 interface Partner {
 	id: string;
 	name: string;
+	images: string[];
 	type: number;
 	areacode: number;
+	rate: number;
+	reviews: number;
 	location: {
 		address: string;
 		lat: number;

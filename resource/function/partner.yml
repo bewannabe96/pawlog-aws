@@ -44,3 +44,10 @@ updateImages:
           parameters:
             paths:
               partnerID: true
+
+createReview:
+  handler: src/endpoint/partner.createReview
+  events:
+    - http:
+        path: partner/{partnerID}/review
+        method: put

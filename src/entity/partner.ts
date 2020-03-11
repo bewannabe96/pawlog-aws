@@ -3,6 +3,7 @@ interface PartnerEntity {
 	type: number;
 	name: string;
 	areacode: number;
+	rate: number;
 	address: string;
 	lat: number;
 	lng: number;
