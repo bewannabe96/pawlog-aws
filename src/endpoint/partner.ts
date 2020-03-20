@@ -8,7 +8,7 @@ import PartnerDBManager from '../database-manager/partner';
 
 import { createResponse } from '../util/response';
 
-export const readPartnerList: APIGatewayProxyHandler = async event => {
+export const readPartners: APIGatewayProxyHandler = async event => {
 	const type = event.queryStringParameters?.type
 		? parseInt(event.queryStringParameters.type)
 		: 0;
@@ -17,7 +17,7 @@ export const readPartnerList: APIGatewayProxyHandler = async event => {
 		: 1;
 
 	try {
-		const result = await PartnerDBManager.reatPartners(type, page);
+		const result = await PartnerDBManager.readPartners(type, page);
 
 		return createResponse(200, result);
 	} catch (e) {
@@ -88,6 +88,22 @@ export const createReview: APIGatewayProxyHandler = async event => {
 			partnerID,
 			parsedBody as Review,
 		);
+		return createResponse(200, result);
+	} catch (e) {
+		console.log(e);
+		return createResponse(500, {});
+	}
+};
+
+export const readReviews: APIGatewayProxyHandler = async event => {
+	const partnerID = event.pathParameters.partnerID;
+	const page = event.queryStringParameters?.page
+		? parseInt(event.queryStringParameters.page)
+		: 1;
+
+	try {
+		const result = await PartnerDBManager.readReviews(partnerID, page);
+
 		return createResponse(200, result);
 	} catch (e) {
 		console.log(e);

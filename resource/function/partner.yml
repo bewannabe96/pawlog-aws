@@ -1,5 +1,5 @@
-readPartnerList:
-  handler: src/endpoint/partner.readPartnerList
+readPartners:
+  handler: src/endpoint/partner.readPartners
   events:
     - http:
         path: partner
@@ -51,3 +51,10 @@ createReview:
     - http:
         path: partner/{partnerID}/review
         method: put
+
+readReviews:
+  handler: src/endpoint/partner.readReviews
+  events:
+    - http:
+        path: partner/{partnerID}/review
+        method: GET

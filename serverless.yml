@@ -49,6 +49,9 @@ resources:
   - ${file(./resource/rds.yml)}
   - ${file(./resource/partner-image-s3.yml)}
 
+  - ${file(./resource/cognito-userpool.yml)}
+  - ${file(./resource/cognito-identitypool.yml)}
+
 functions:
   - ${file(./resource/function/config.yml)}
   - ${file(./resource/function/partner.yml)}

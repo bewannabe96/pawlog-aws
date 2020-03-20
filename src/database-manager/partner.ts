@@ -13,7 +13,7 @@ const mysqlConn: mysql.ServerlessMysql = mysql({
 });
 
 namespace PartnerDBManager {
-	export const reatPartners = async (type: number, page: number) => {
+	export const readPartners = async (type: number, page: number) => {
 		const perPage = 10;
 		const offset = (page - 1) * perPage;
 
@@ -208,6 +208,37 @@ namespace PartnerDBManager {
 
 		return {
 			reviewID: result[0].insertId,
+		};
+	};
+
+	export const readReviews = async (partnerID: string, page: number) => {
+		const perPage = 10;
+		const offset = (page - 1) * perPage;
+
+		let transaction: mysql.Transaction = mysqlConn.transaction();
+
+		transaction = transaction
+			.query('SELECT count(id) AS total FROM review WHERE partnerid=?;', [
+				partnerID,
+			])
+			.query(
+				'SELECT id, userid, rate, content FROM review WHERE partnerid=? LIMIT ?, ?;',
+				[partnerID, offset, perPage],
+			);
+
+		let result: any;
+		try {
+			result = await transaction.commit();
+		} finally {
+			mysqlConn.end();
+		}
+
+		const [result1, result2] = result;
+
+		return {
+			currentPage: page,
+			maxPage: Math.ceil(result1[0].total / 10),
+			partners: result2,
 		};
 	};
 }
