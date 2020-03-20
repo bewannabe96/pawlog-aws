@@ -1,0 +1,6 @@
+readUser:
+  handler: src/endpoint/user.readUser
+  events:
+    - http:
+        path: user
+        method: get

@@ -222,7 +222,8 @@ namespace PartnerDBManager {
 				partnerID,
 			])
 			.query(
-				'SELECT id, userid, rate, content FROM review WHERE partnerid=? LIMIT ?, ?;',
+				'SELECT R.id, U.name, U.picture, R.rate, R.content FROM review AS R ' +
+					'JOIN user AS U WHERE U.id=R.userid && partnerid=? ORDER BY created DESC LIMIT ?, ?;',
 				[partnerID, offset, perPage],
 			);
 
@@ -238,7 +239,7 @@ namespace PartnerDBManager {
 		return {
 			currentPage: page,
 			maxPage: Math.ceil(result1[0].total / 10),
-			partners: result2,
+			reviews: result2,
 		};
 	};
 }

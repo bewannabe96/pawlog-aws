@@ -14,16 +14,19 @@ Resources:
       Schema:
         - Name: email
           AttributeDataType: String
-          Mutable: false
+          Mutable: true
           Required: true
         - Name: name
           AttributeDataType: String
+          Mutable: true
           Required: true
         - Name: family_name
           AttributeDataType: String
+          Mutable: true
           Required: true
         - Name: given_name
           AttributeDataType: String
+          Mutable: true
           Required: true
       Policies:
         PasswordPolicy:
