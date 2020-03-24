@@ -38,19 +38,19 @@ provider:
     DB_PSWD: godqhrgkwk
 
 resources:
-  - ${file(./resource/vpc.yml)}
-  - ${file(./resource/security-group.yml)}
-  - ${file(./resource/subnet.yml)}
-  - ${file(./resource/route-table.yml)}
+  - ${file(./resource/vpc/vpc.yml)}
+  - ${file(./resource/vpc/security-group.yml)}
+  - ${file(./resource/vpc/subnet.yml)}
+  - ${file(./resource/vpc/route-table.yml)}
 
-  - ${file(./resource/nat-gateway.yml)}
-  - ${file(./resource/internet-gateway.yml)}
+  - ${file(./resource/vpc/nat-gateway.yml)}
+  - ${file(./resource/vpc/internet-gateway.yml)}
+
+  - ${file(./resource/cognito/userpool.yml)}
+  - ${file(./resource/cognito/identitypool.yml)}
 
   - ${file(./resource/rds.yml)}
   - ${file(./resource/partner-image-s3.yml)}
-
-  - ${file(./resource/cognito-userpool.yml)}
-  - ${file(./resource/cognito-identitypool.yml)}
 
 functions:
   - ${file(./resource/function/config.yml)}

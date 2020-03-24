@@ -1,6 +1,10 @@
-readUser:
-  handler: src/endpoint/user.readUser
+getUser:
+  handler: src/api/users.getUser
   events:
     - http:
-        path: user
+        path: users
         method: get
+        request:
+          parameters:
+            querystrings:
+              sub: true

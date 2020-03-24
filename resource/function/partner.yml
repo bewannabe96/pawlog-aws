@@ -1,60 +1,87 @@
-readPartners:
-  handler: src/endpoint/partner.readPartners
+listPartners:
+  handler: src/api/partners.listPartners
   events:
     - http:
-        path: partner
+        path: partners
         method: get
+        request:
+          parameters:
+            querystrings:
+              limit: false
+              offset: false
 
 createPartner:
-  handler: src/endpoint/partner.createPartner
+  handler: src/api/partners.createPartner
   events:
     - http:
-        path: partner
-        method: put
+        path: partners
+        method: post
 
-readPartner:
-  handler: src/endpoint/partner.readPartner
+getPartnerDetail:
+  handler: src/api/partners.getPartnerDetail
   events:
     - http:
+        path: partners/{partnerID}
         method: get
-        path: partner/{partnerID}
         request:
           parameters:
             paths:
               partnerID: true
 
-updatePartner:
-  handler: src/endpoint/partner.updatePartner
+updatePartnerDetail:
+  handler: src/api/partners.updatePartnerDetail
   events:
     - http:
-        method: post
-        path: partner/{partnerID}
-        request:
-          parameters:
-            paths:
-              partnerID: true
-
-updateImages:
-  handler: src/endpoint/partner.updateImages
-  events:
-    - http:
-        method: post
-        path: partner/{partnerID}/image
-        request:
-          parameters:
-            paths:
-              partnerID: true
-
-createReview:
-  handler: src/endpoint/partner.createReview
-  events:
-    - http:
-        path: partner/{partnerID}/review
+        path: partners/{partnerID}
         method: put
+        request:
+          parameters:
+            paths:
+              partnerID: true
 
-readReviews:
-  handler: src/endpoint/partner.readReviews
+getPartnerImages:
+  handler: src/api/partners.getPartnerImages
   events:
     - http:
-        path: partner/{partnerID}/review
-        method: GET
+        path: partners/{partnerID}/images
+        method: get
+        request:
+          parameters:
+            paths:
+              partnerID: true
+
+updatePartnerImages:
+  handler: src/api/partners.updatePartnerImages
+  events:
+    - http:
+        path: partners/{partnerID}/images
+        method: put
+        request:
+          parameters:
+            paths:
+              partnerID: true
+
+getPartnerReviews:
+  handler: src/api/partners.getPartnerReviews
+  events:
+    - http:
+        path: partners/{partnerID}/reviews
+        method: get
+        request:
+          parameters:
+            paths:
+              partnerID: true
+            querystrings:
+              limit: false
+              offset: false
+
+createPartnerReview:
+  handler: src/api/partners.createPartnerReview
+  events:
+    - http:
+        path: partners/{partnerID}/reviews
+        method: post
+        request:
+          parameters:
+            paths:
+              partnerID: true

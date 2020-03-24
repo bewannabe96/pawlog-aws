@@ -1,3 +1,8 @@
-export const createResponse = (statusCode: number, message: any) => {
-	return { statusCode: statusCode, body: JSON.stringify(message) };
+import { APIGatewayProxyResult } from 'aws-lambda';
+
+export const createResponse = <ResponseBody>(
+	statusCode: number,
+	body: ResponseBody,
+): APIGatewayProxyResult => {
+	return { statusCode: statusCode, body: JSON.stringify(body) };
 };
