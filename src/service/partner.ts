@@ -9,7 +9,8 @@ namespace PartnerService {
 		transaction = transaction
 			.query('SELECT count(id) AS total FROM partner;')
 			.query(
-				'SELECT id, name, areacode, rate, reviews FROM partner LIMIT ?, ?;',
+				'SELECT P.id, P.name, P.areacode, P.rate, P.reviews, GROUP_CONCAT(R.partnertypecode) as types ' +
+					'FROM partner AS P JOIN ptnrtyperelation AS R WHERE P.id=R.partnerid GROUP BY P.id LIMIT ?, ?;',
 				[offset * limit, limit],
 			);
 
@@ -22,6 +23,7 @@ namespace PartnerService {
 				return {
 					id: row.id,
 					name: row.name,
+					types: row.types.split(',').map((t: any) => parseInt(t)),
 					areacode: row.areacode,
 					review: {
 						averageRate: row.rate,
@@ -34,7 +36,8 @@ namespace PartnerService {
 
 	export const createPartner = async (
 		name: string,
-		areacode: string,
+		types: number[],
+		areacode: number,
 		location: Location,
 	) => {
 		let transaction = mysqlConn.transaction();
@@ -47,10 +50,17 @@ namespace PartnerService {
 			.query('SELECT LAST_INSERT_ID() INTO @insertid;')
 			.query('INSERT INTO partnerdetail (partnerid) VALUES (@insertid);');
 
+		types.forEach(type => {
+			transaction = transaction.query(
+				'INSERT INTO ptnrtyperelation VALUES (@insertid, ?);',
+				[type],
+			);
+		});
+
 		const [result1] = await transaction.commit();
 		mysqlConn.end();
 
-		return { partnerID: result1.insertId };
+		return { partnerID: `${result1.insertId}` };
 	};
 
 	export const getPartnerDetail = async (partnerID: string) => {
@@ -62,16 +72,21 @@ namespace PartnerService {
 				[partnerID],
 			)
 			.query(
+				'SELECT partnertypecode FROM ptnrtyperelation WHERE partnerid=?;',
+				[partnerID],
+			)
+			.query(
 				'SELECT email, phone, monoh, tueoh, wedoh, thuoh, frioh, satoh, sunoh, phoh FROM partnerdetail WHERE partnerid=?;',
 				[partnerID],
 			);
 
-		const [result1, result2] = await transaction.commit();
+		const [result1, result2, result3] = await transaction.commit();
 		mysqlConn.end();
 
 		return {
 			id: partnerID,
 			name: result1[0].name,
+			types: result2.map((row: any) => row.partnertypecode),
 			areacode: result1[0].areacode,
 			location: {
 				address: result1[0].address,
@@ -84,18 +99,18 @@ namespace PartnerService {
 			},
 			detail: {
 				operatingHours: {
-					mon: result2[0].monoh,
-					tue: result2[0].tueoh,
-					wed: result2[0].wedoh,
-					thu: result2[0].thuoh,
-					fri: result2[0].frioh,
-					sat: result2[0].satoh,
-					sun: result2[0].sunoh,
-					ph: result2[0].phoh,
+					mon: result3[0].monoh,
+					tue: result3[0].tueoh,
+					wed: result3[0].wedoh,
+					thu: result3[0].thuoh,
+					fri: result3[0].frioh,
+					sat: result3[0].satoh,
+					sun: result3[0].sunoh,
+					ph: result3[0].phoh,
 				},
 				contact: {
-					email: result2[0].email,
-					phone: result2[0].phone,
+					email: result3[0].email,
+					phone: result3[0].phone,
 				},
 			},
 			registered: result1[0].registered,
@@ -106,7 +121,8 @@ namespace PartnerService {
 	export const updatePartnerDetail = async (
 		partnerID: string,
 		name: string,
-		areacode: string,
+		types: number[],
+		areacode: number,
 		location: Location,
 		operatingHours: OperatingHours,
 		contact: Contact,
@@ -140,7 +156,15 @@ namespace PartnerService {
 					operatingHours.ph,
 					partnerID,
 				],
+			)
+			.query('DELETE FROM ptnrtyperelation WHERE partnerid=?;', [partnerID]);
+
+		types.forEach(t => {
+			transaction = transaction.query(
+				'INSERT INTO ptnrtyperelation VALUES (?, ?);',
+				[partnerID, t],
 			);
+		});
 
 		await transaction.commit();
 		mysqlConn.end();
@@ -245,7 +269,7 @@ namespace PartnerService {
 		mysqlConn.end();
 
 		return {
-			reviewID: result1.insertId,
+			reviewID: `${result1.insertId}`,
 			review: review,
 		};
 	};

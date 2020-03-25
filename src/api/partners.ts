@@ -30,13 +30,15 @@ export const listPartners: APIGatewayProxyHandler = async event => {
 export const createPartner: APIGatewayProxyHandler = async event => {
 	const data = JSON.parse(event.body) as {
 		name: string;
-		areacode: string;
+		types: number[];
+		areacode: number;
 		location: Location;
 	};
 
 	try {
 		const result = await PartnerService.createPartner(
 			data.name,
+			data.types,
 			data.areacode,
 			data.location,
 		);
@@ -67,7 +69,8 @@ export const updatePartnerDetail: APIGatewayProxyHandler = async event => {
 	const partnerID = event.pathParameters.partnerID;
 	const data = JSON.parse(event.body) as {
 		name: string;
-		areacode: string;
+		types: number[];
+		areacode: number;
 		location: Location;
 		operatingHours: OperatingHours;
 		contact: Contact;
@@ -77,6 +80,7 @@ export const updatePartnerDetail: APIGatewayProxyHandler = async event => {
 		const result = await PartnerService.updatePartnerDetail(
 			partnerID,
 			data.name,
+			data.types,
 			data.areacode,
 			data.location,
 			data.operatingHours,
