@@ -6,3 +6,16 @@ Resources:
       Tags:
         - Key: Name
           Value: PawlogPartnerImageS3
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins:
+              - '*'
+            AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+              - DELETE
+            MaxAge: 3000

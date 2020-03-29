@@ -36,6 +36,7 @@ provider:
     # DB_USER: admin
     DB_USER: root
     DB_PSWD: godqhrgkwk
+    PARTNER_IMAGE_S3_DOMAIN: !Ref PawlogPartnerImageS3.DomainName
 
 resources:
   - ${file(./resource/vpc/vpc.yml)}

@@ -175,39 +175,49 @@ namespace PartnerService {
 	export const getPartnerImages = async (partnerID: string) => {
 		let transaction = mysqlConn.transaction();
 
-		transaction = transaction.query(
-			'SELECT identifier FROM partnerimage WHERE partnerid=?;',
-			[partnerID],
-		);
+		transaction = transaction.query('SELECT images FROM partner WHERE id=?;', [
+			partnerID,
+		]);
 
 		const [result1] = await transaction.commit();
 		mysqlConn.end();
 
-		return { images: result1.map((row: any) => row.identifier) };
+		if (!result1[0].images) return { images: [] };
+
+		const uids = result1[0].images.split(':');
+
+		return {
+			images: uids.map((uid: any) => {
+				return {
+					uid: uid,
+					url: `https://pawlog-partner-image.s3-ap-southeast-1.amazonaws.com/partner-${partnerID}/${uid}`,
+				};
+			}),
+		};
 	};
 
 	export const updatePartnerImages = async (
 		partnerID: string,
-		images: string[],
+		uids: string[],
 	) => {
 		let transaction = mysqlConn.transaction();
 
 		transaction = transaction.query(
-			'DELETE FROM partnerimage WHERE partnerid=?;',
-			[partnerID],
+			'UPDATE partner SET images=?, updated=NOW() WHERE id=?;',
+			[uids.join(':'), partnerID],
 		);
-
-		images.forEach(image => {
-			transaction = transaction.query(
-				'INSERT INTO partnerimage (partnerid, identifier) VALUES (?, ?);',
-				[partnerID, image],
-			);
-		});
 
 		await transaction.commit();
 		mysqlConn.end();
 
-		return { images: images };
+		return {
+			images: uids.map((uid: any) => {
+				return {
+					uid: uid,
+					url: 'http://test.com/' + uid,
+				};
+			}),
+		};
 	};
 
 	export const getPartnerReviews = async (

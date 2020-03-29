@@ -111,12 +111,12 @@ export const getPartnerImages: APIGatewayProxyHandler = async event => {
 // updatePartnerImages
 export const updatePartnerImages: APIGatewayProxyHandler = async event => {
 	const partnerID = event.pathParameters.partnerID;
-	const data = JSON.parse(event.body) as { images: string[] };
+	const data = JSON.parse(event.body) as { uids: string[] };
 
 	try {
 		const result = await PartnerService.updatePartnerImages(
 			partnerID,
-			data.images,
+			data.uids,
 		);
 		return createResponse(200, result);
 	} catch (error) {
