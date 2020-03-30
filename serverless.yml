@@ -36,7 +36,8 @@ provider:
     # DB_USER: admin
     DB_USER: root
     DB_PSWD: godqhrgkwk
-    PARTNER_IMAGE_S3_DOMAIN: !Ref PawlogPartnerImageS3.DomainName
+    # PARTNER_IMAGE_S3_DOMAIN: !GetAtt PawlogPartnerImageS3.RegionalDomainName
+    PARTNER_IMAGE_S3_DOMAIN: pawlog-partner-image.s3.ap-southeast-1.amazonaws.com
 
 resources:
   - ${file(./resource/vpc/vpc.yml)}
@@ -57,3 +58,5 @@ functions:
   - ${file(./resource/function/config.yml)}
   - ${file(./resource/function/partner.yml)}
   - ${file(./resource/function/user.yml)}
+
+  - ${file(./resource/trigger/s3.yml)}

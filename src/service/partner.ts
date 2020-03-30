@@ -182,15 +182,13 @@ namespace PartnerService {
 		const [result1] = await transaction.commit();
 		mysqlConn.end();
 
-		if (!result1[0].images) return { images: [] };
-
-		const uids = result1[0].images.split(':');
+		const uids = result1[0].images === '' ? [] : result1[0].images.split(':');
 
 		return {
 			images: uids.map((uid: any) => {
 				return {
 					uid: uid,
-					url: `https://pawlog-partner-image.s3-ap-southeast-1.amazonaws.com/partner-${partnerID}/${uid}`,
+					url: `https://${process.env.PARTNER_IMAGE_S3_DOMAIN}/partner-${partnerID}/${uid}`,
 				};
 			}),
 		};
@@ -214,7 +212,7 @@ namespace PartnerService {
 			images: uids.map((uid: any) => {
 				return {
 					uid: uid,
-					url: 'http://test.com/' + uid,
+					url: `https://${process.env.PARTNER_IMAGE_S3_DOMAIN}/partner-${partnerID}/${uid}`,
 				};
 			}),
 		};
