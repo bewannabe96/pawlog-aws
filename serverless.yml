@@ -4,9 +4,16 @@ service:
   org: rnjssh96
 
 custom:
+  pawlogPartnerImageBucket: pawlog-partner-image
   webpack:
     webpackConfig: ./webpack.config.js
-    includeModules: true
+    includeModules:
+      forceExclude:
+        - aws-sdk
+    packagerOptions:
+      scripts:
+        - rm -rf node_modules/sharp
+        - npm install --arch=x64 --platform=linux sharp
   serverless-offline:
     httpPort: 4000
 
@@ -28,6 +35,31 @@ provider:
       - Ref: PrivateSubnetA
       - Ref: PrivateSubnetB
       - Ref: PrivateSubnetC
+  s3:
+    pawlogPartnerImageBucket:
+      name: ${self:custom.pawlogPartnerImageBucket}
+      tags:
+        - Key: Name
+          Value: PawlogPartnerImageS3
+      corsConfiguration:
+        CorsRules:
+          - AllowedOrigins:
+              - '*'
+            AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+              - DELETE
+            MaxAge: 3000
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:*
+      Resource:
+        - arn:aws:s3:::${self:custom.pawlogPartnerImageBucket}/*
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
     DB_HOST: 127.0.0.1
@@ -36,8 +68,7 @@ provider:
     # DB_USER: admin
     DB_USER: root
     DB_PSWD: godqhrgkwk
-    # PARTNER_IMAGE_S3_DOMAIN: !GetAtt PawlogPartnerImageS3.RegionalDomainName
-    PARTNER_IMAGE_S3_DOMAIN: pawlog-partner-image.s3.ap-southeast-1.amazonaws.com
+    PARTNER_IMAGE_S3_DOMAIN: ${self:custom.pawlogPartnerImageBucket}.s3.ap-southeast-1.amazonaws.com
 
 resources:
   - ${file(./resource/vpc/vpc.yml)}
@@ -52,7 +83,6 @@ resources:
   - ${file(./resource/cognito/identitypool.yml)}
 
   - ${file(./resource/rds.yml)}
-  - ${file(./resource/partner-image-s3.yml)}
 
 functions:
   - ${file(./resource/function/config.yml)}

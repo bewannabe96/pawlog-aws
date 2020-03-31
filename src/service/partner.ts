@@ -21,7 +21,7 @@ namespace PartnerService {
 			total: result1[0].total,
 			partners: result2.map((row: any) => {
 				return {
-					id: row.id,
+					id: row.id.toString(),
 					name: row.name,
 					types: row.types.split(',').map((t: any) => parseInt(t)),
 					areacode: row.areacode,
@@ -188,7 +188,7 @@ namespace PartnerService {
 			images: uids.map((uid: any) => {
 				return {
 					uid: uid,
-					url: `https://${process.env.PARTNER_IMAGE_S3_DOMAIN}/partner-${partnerID}/${uid}`,
+					url: `https://${process.env.PARTNER_IMAGE_S3_DOMAIN}/${partnerID}/${uid}`,
 				};
 			}),
 		};
@@ -212,7 +212,7 @@ namespace PartnerService {
 			images: uids.map((uid: any) => {
 				return {
 					uid: uid,
-					url: `https://${process.env.PARTNER_IMAGE_S3_DOMAIN}/partner-${partnerID}/${uid}`,
+					url: `https://${process.env.PARTNER_IMAGE_S3_DOMAIN}/${partnerID}/${uid}`,
 				};
 			}),
 		};

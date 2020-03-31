@@ -1,7 +1,9 @@
 resizeImage:
   handler: src/trigger/s3.resizeImage
+  memorySize: 2048
   events:
     - s3:
-        bucket: pawlog-partner-image
+        bucket: pawlogPartnerImageBucket
         event: s3:ObjectCreated:*
-        existing: true
+        rules:
+          - prefix: uploads/
