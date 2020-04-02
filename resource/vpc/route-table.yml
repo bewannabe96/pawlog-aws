@@ -1,38 +1,4 @@
 Resources:
-  PrivateRouteTable:
-    DependsOn: PawlogVPC
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId:
-        Ref: PawlogVPC
-      Tags:
-        - Key: Name
-          Value: PrivateRouteTable
-
-  SubnetARouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId:
-        Ref: PrivateRouteTable
-      SubnetId:
-        Ref: PrivateSubnetA
-
-  SubnetBRouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId:
-        Ref: PrivateRouteTable
-      SubnetId:
-        Ref: PrivateSubnetB
-
-  SubnetCRouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId:
-        Ref: PrivateRouteTable
-      SubnetId:
-        Ref: PrivateSubnetC
-
   PublicRouteTable:
     DependsOn: PawlogVPC
     Type: AWS::EC2::RouteTable
@@ -42,7 +8,6 @@ Resources:
       Tags:
         - Key: Name
           Value: PublicRouteTable
-
   PublicSubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -50,3 +15,34 @@ Resources:
         Ref: PublicRouteTable
       SubnetId:
         Ref: PublicSubnet
+
+  PrivateRouteTable:
+    DependsOn: PawlogVPC
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: PawlogVPC
+      Tags:
+        - Key: Name
+          Value: PrivateRouteTable
+  SubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable
+      SubnetId:
+        Ref: PrivateSubnetA
+  SubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable
+      SubnetId:
+        Ref: PrivateSubnetB
+  SubnetCRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable
+      SubnetId:
+        Ref: PrivateSubnetC

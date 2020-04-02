@@ -20,9 +20,8 @@ export const listPartners: APIGatewayProxyHandler = async event => {
 		);
 		return createResponse(200, result);
 	} catch (error) {
-		return createResponse(500, {
-			message: error,
-		});
+		console.log(error);
+		return createResponse(500, error);
 	}
 };
 
@@ -44,9 +43,8 @@ export const createPartner: APIGatewayProxyHandler = async event => {
 		);
 		return createResponse(200, result);
 	} catch (error) {
-		return createResponse(500, {
-			message: error,
-		});
+		console.log(error);
+		return createResponse(500, error);
 	}
 };
 
@@ -58,9 +56,8 @@ export const getPartnerDetail: APIGatewayProxyHandler = async event => {
 		const result = await PartnerService.getPartnerDetail(partnerID);
 		return createResponse(200, result);
 	} catch (error) {
-		return createResponse(500, {
-			message: error,
-		});
+		console.log(error);
+		return createResponse(500, error);
 	}
 };
 
@@ -88,9 +85,8 @@ export const updatePartnerDetail: APIGatewayProxyHandler = async event => {
 		);
 		return createResponse(200, result);
 	} catch (error) {
-		return createResponse(500, {
-			message: error,
-		});
+		console.log(error);
+		return createResponse(500, error);
 	}
 };
 
@@ -102,9 +98,8 @@ export const getPartnerImages: APIGatewayProxyHandler = async event => {
 		const result = await PartnerService.getPartnerImages(partnerID);
 		return createResponse(200, result);
 	} catch (error) {
-		return createResponse(500, {
-			message: error,
-		});
+		console.log(error);
+		return createResponse(500, error);
 	}
 };
 
@@ -120,9 +115,37 @@ export const updatePartnerImages: APIGatewayProxyHandler = async event => {
 		);
 		return createResponse(200, result);
 	} catch (error) {
-		return createResponse(500, {
-			message: error,
-		});
+		console.log(error);
+		return createResponse(500, error);
+	}
+};
+
+// uploadPartnerImage
+export const uploadPartnerImage: APIGatewayProxyHandler = async event => {
+	const partnerID = event.pathParameters.partnerID;
+	const uid = event.pathParameters.uid;
+	const data = Buffer.from(event.body, 'base64');
+
+	try {
+		await PartnerService.uploadPartnerImage(partnerID, uid, data);
+		return createResponse(200, { uid: uid });
+	} catch (error) {
+		console.log(error);
+		return createResponse(500, error);
+	}
+};
+
+// deletePartnerImage
+export const deletePartnerImage: APIGatewayProxyHandler = async event => {
+	const partnerID = event.pathParameters.partnerID;
+	const uid = event.pathParameters.uid;
+
+	try {
+		await PartnerService.deleteParnterImage(partnerID, uid);
+		return createResponse(200, { uid: uid });
+	} catch (error) {
+		console.log(error);
+		return createResponse(500, error);
 	}
 };
 
@@ -142,9 +165,8 @@ export const getPartnerReviews: APIGatewayProxyHandler = async event => {
 		);
 		return createResponse(200, result);
 	} catch (error) {
-		return createResponse(500, {
-			message: error,
-		});
+		console.log(error);
+		return createResponse(500, error);
 	}
 };
 
@@ -164,8 +186,7 @@ export const createPartnerReview: APIGatewayProxyHandler = async event => {
 		);
 		return createResponse(200, result);
 	} catch (error) {
-		return createResponse(500, {
-			message: error,
-		});
+		console.log(error);
+		return createResponse(500, error);
 	}
 };

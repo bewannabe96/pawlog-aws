@@ -4,6 +4,7 @@ getUser:
     - http:
         path: users
         method: get
+        cors: true
         request:
           parameters:
             querystrings:

@@ -4,7 +4,6 @@ service:
   org: rnjssh96
 
 custom:
-  pawlogPartnerImageBucket: pawlog-partner-image
   webpack:
     webpackConfig: ./webpack.config.js
     includeModules:
@@ -14,12 +13,16 @@ custom:
       scripts:
         - rm -rf node_modules/sharp
         - npm install --arch=x64 --platform=linux sharp
+  apigwBinary:
+    types:
+      - image/*
   serverless-offline:
     httpPort: 4000
 
 plugins:
   - serverless-webpack
   - serverless-offline
+  - serverless-apigw-binary
 
 provider:
   name: aws
@@ -35,40 +38,25 @@ provider:
       - Ref: PrivateSubnetA
       - Ref: PrivateSubnetB
       - Ref: PrivateSubnetC
-  s3:
-    pawlogPartnerImageBucket:
-      name: ${self:custom.pawlogPartnerImageBucket}
-      tags:
-        - Key: Name
-          Value: PawlogPartnerImageS3
-      corsConfiguration:
-        CorsRules:
-          - AllowedOrigins:
-              - '*'
-            AllowedHeaders:
-              - '*'
-            AllowedMethods:
-              - HEAD
-              - GET
-              - PUT
-              - POST
-              - DELETE
-            MaxAge: 3000
   iamRoleStatements:
     - Effect: Allow
       Action:
         - s3:*
       Resource:
-        - arn:aws:s3:::${self:custom.pawlogPartnerImageBucket}/*
+        - !Join
+          - ''
+          - - !GetAtt S3BucketPartnerImage.Arn
+            - '/*'
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
-    DB_HOST: 127.0.0.1
-    # DB_HOST: !GetAtt PawlogRDS.Endpoint.Address
+    # DB_HOST: 127.0.0.1
+    DB_HOST: !GetAtt PawlogRDS.Endpoint.Address
     DB_NAME: pawlog
-    # DB_USER: admin
-    DB_USER: root
+    DB_USER: admin
+    # DB_USER: root
     DB_PSWD: godqhrgkwk
-    PARTNER_IMAGE_S3_DOMAIN: ${self:custom.pawlogPartnerImageBucket}.s3.ap-southeast-1.amazonaws.com
+    PARTNER_IMAGE_BUCKET: !Ref S3BucketPartnerImage
+    PARTNER_IMAGE_BUCKET_DOMAIN: !GetAtt S3BucketPartnerImage.RegionalDomainName
 
 resources:
   - ${file(./resource/vpc/vpc.yml)}
@@ -76,17 +64,16 @@ resources:
   - ${file(./resource/vpc/subnet.yml)}
   - ${file(./resource/vpc/route-table.yml)}
 
-  - ${file(./resource/vpc/nat-gateway.yml)}
   - ${file(./resource/vpc/internet-gateway.yml)}
+  - ${file(./resource/vpc/nat-gateway.yml)}
 
   - ${file(./resource/cognito/userpool.yml)}
   - ${file(./resource/cognito/identitypool.yml)}
 
   - ${file(./resource/rds.yml)}
+  - ${file(./resource/s3-bucket-partner-image.yml)}
 
 functions:
   - ${file(./resource/function/config.yml)}
   - ${file(./resource/function/partner.yml)}
   - ${file(./resource/function/user.yml)}
-
-  - ${file(./resource/trigger/s3.yml)}

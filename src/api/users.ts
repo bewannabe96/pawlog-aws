@@ -19,8 +19,7 @@ export const getUser: APIGatewayProxyHandler = async event => {
 				message: 'User does not exist.',
 			});
 	} catch (error) {
-		return createResponse(500, {
-			message: error,
-		});
+		console.log(error);
+		return createResponse(500, error);
 	}
 };

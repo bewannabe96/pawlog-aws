@@ -1,0 +1,8 @@
+Resources:
+  S3BucketPartnerImage:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: pawlog-partner-image
+      Tags:
+        - Key: Name
+          Value: S3BucketPartnerImage

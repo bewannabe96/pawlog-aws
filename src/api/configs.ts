@@ -10,9 +10,8 @@ export const listAreaCodes: APIGatewayProxyHandler = async () => {
 		const result = await ConfigService.getAreas();
 		return createResponse(200, result);
 	} catch (error) {
-		return createResponse(500, {
-			message: error,
-		});
+		console.log(error);
+		return createResponse(500, error);
 	}
 };
 
@@ -22,8 +21,7 @@ export const listPartnerTypes: APIGatewayProxyHandler = async () => {
 		const result = await ConfigService.getPartnerTypes();
 		return createResponse(200, result);
 	} catch (error) {
-		return createResponse(500, {
-			message: error,
-		});
+		console.log(error);
+		return createResponse(500, error);
 	}
 };

@@ -4,6 +4,7 @@ listAreaCodes:
     - http:
         path: configs/area
         method: get
+        cors: true
 
 listPartnerTypes:
   handler: src/api/configs.listPartnerTypes
@@ -11,3 +12,4 @@ listPartnerTypes:
     - http:
         path: configs/partnerType
         method: get
+        cors: true

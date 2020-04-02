@@ -4,6 +4,7 @@ listPartners:
     - http:
         path: partners
         method: get
+        cors: true
         request:
           parameters:
             querystrings:
@@ -16,6 +17,7 @@ createPartner:
     - http:
         path: partners
         method: post
+        cors: true
 
 getPartnerDetail:
   handler: src/api/partners.getPartnerDetail
@@ -23,6 +25,7 @@ getPartnerDetail:
     - http:
         path: partners/{partnerID}
         method: get
+        cors: true
         request:
           parameters:
             paths:
@@ -34,6 +37,7 @@ updatePartnerDetail:
     - http:
         path: partners/{partnerID}
         method: put
+        cors: true
         request:
           parameters:
             paths:
@@ -45,6 +49,7 @@ getPartnerImages:
     - http:
         path: partners/{partnerID}/images
         method: get
+        cors: true
         request:
           parameters:
             paths:
@@ -56,10 +61,37 @@ updatePartnerImages:
     - http:
         path: partners/{partnerID}/images
         method: put
+        cors: true
         request:
           parameters:
             paths:
               partnerID: true
+
+uploadPartnerImage:
+  handler: src/api/partners.uploadPartnerImage
+  events:
+    - http:
+        path: partners/{partnerID}/images/{uid}
+        method: post
+        cors: true
+        request:
+          parameters:
+            paths:
+              partnerID: true
+              uid: true
+
+deletePartnerImage:
+  handler: src/api/partners.deletePartnerImage
+  events:
+    - http:
+        path: partners/{partnerID}/images/{uid}
+        method: delete
+        cors: true
+        request:
+          parameters:
+            paths:
+              partnerID: true
+              uid: true
 
 getPartnerReviews:
   handler: src/api/partners.getPartnerReviews
@@ -67,6 +99,7 @@ getPartnerReviews:
     - http:
         path: partners/{partnerID}/reviews
         method: get
+        cors: true
         request:
           parameters:
             paths:
@@ -81,6 +114,7 @@ createPartnerReview:
     - http:
         path: partners/{partnerID}/reviews
         method: post
+        cors: true
         request:
           parameters:
             paths:

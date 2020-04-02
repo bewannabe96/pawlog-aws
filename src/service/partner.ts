@@ -1,4 +1,7 @@
+import sharp from 'sharp';
+
 import mysqlConn from '../util/mysql';
+import s3Bucket from '../util/s3-bucket';
 
 import { Location, Contact, OperatingHours, Review } from '../model';
 
@@ -188,7 +191,7 @@ namespace PartnerService {
 			images: uids.map((uid: any) => {
 				return {
 					uid: uid,
-					url: `https://${process.env.PARTNER_IMAGE_S3_DOMAIN}/${partnerID}/${uid}`,
+					url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${partnerID}/${uid}`,
 				};
 			}),
 		};
@@ -212,10 +215,57 @@ namespace PartnerService {
 			images: uids.map((uid: any) => {
 				return {
 					uid: uid,
-					url: `https://${process.env.PARTNER_IMAGE_S3_DOMAIN}/${partnerID}/${uid}`,
+					url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${partnerID}/${uid}`,
 				};
 			}),
 		};
+	};
+
+	export const uploadPartnerImage = async (
+		partnerID: string,
+		uid: string,
+		data: Buffer,
+	) => {
+		const buffer = await new Promise((resolve, reject) =>
+			sharp(data)
+				.resize({ width: 1024, height: 768, fit: sharp.fit.cover })
+				.jpeg()
+				.toBuffer((error, buffer) => {
+					if (buffer) resolve(buffer);
+					else reject(error);
+				}),
+		);
+
+		await new Promise((resolve, reject) =>
+			s3Bucket.putObject(
+				{
+					Bucket: process.env.PARTNER_IMAGE_BUCKET,
+					ACL: 'public-read',
+					Key: `${partnerID}/${uid}`,
+					ContentType: 'image/jpeg',
+					Body: buffer,
+				},
+				(error, data) => {
+					if (data) resolve(data);
+					else reject(error);
+				},
+			),
+		);
+	};
+
+	export const deleteParnterImage = async (partnerID: string, uid: string) => {
+		await new Promise((resolve, reject) =>
+			s3Bucket.deleteObject(
+				{
+					Bucket: process.env.PARTNER_IMAGE_BUCKET,
+					Key: `${partnerID}/${uid}`,
+				},
+				(error, data) => {
+					if (data) resolve(data);
+					else reject(error);
+				},
+			),
+		);
 	};
 
 	export const getPartnerReviews = async (
