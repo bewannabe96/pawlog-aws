@@ -13,3 +13,5 @@ Resources:
         Ref: PrivateSubnetGroup
       VpcSecurityGroupIds:
         - Ref: PawlogSecurityGroup
+      ScalingConfiguration:
+        AutoPause: false

@@ -5,6 +5,7 @@ import { createResponse } from '../util/response';
 import { Location, OperatingHours, Contact, Review } from '../model';
 
 import PartnerService from '../service/partner';
+import PartnerImageService from '../service/partner-image';
 
 // listPartners
 export const listPartners: APIGatewayProxyHandler = async event => {
@@ -90,6 +91,20 @@ export const updatePartnerDetail: APIGatewayProxyHandler = async event => {
 	}
 };
 
+// deletePartner
+export const deletePartner: APIGatewayProxyHandler = async event => {
+	const partnerID = event.pathParameters.partnerID;
+
+	try {
+		await PartnerImageService.emptyPartnerImages(partnerID);
+		const result = await PartnerService.deletePartner(partnerID);
+		return createResponse(200, result);
+	} catch (error) {
+		console.log(error);
+		return createResponse(500, error);
+	}
+};
+
 // getPartnerImages
 export const getPartnerImages: APIGatewayProxyHandler = async event => {
 	const partnerID = event.pathParameters.partnerID;
@@ -127,7 +142,7 @@ export const uploadPartnerImage: APIGatewayProxyHandler = async event => {
 	const data = Buffer.from(event.body, 'base64');
 
 	try {
-		await PartnerService.uploadPartnerImage(partnerID, uid, data);
+		await PartnerImageService.uploadPartnerImage(partnerID, uid, data);
 		return createResponse(200, { uid: uid });
 	} catch (error) {
 		console.log(error);
@@ -141,7 +156,7 @@ export const deletePartnerImage: APIGatewayProxyHandler = async event => {
 	const uid = event.pathParameters.uid;
 
 	try {
-		await PartnerService.deleteParnterImage(partnerID, uid);
+		await PartnerImageService.deletePartnerImage(partnerID, uid);
 		return createResponse(200, { uid: uid });
 	} catch (error) {
 		console.log(error);

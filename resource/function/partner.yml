@@ -43,6 +43,18 @@ updatePartnerDetail:
             paths:
               partnerID: true
 
+deletePartner:
+  handler: src/api/partners.deletePartner
+  events:
+    - http:
+        path: partners/{partnerID}
+        method: delete
+        cors: true
+        request:
+          parameters:
+            paths:
+              partnerID: true
+
 getPartnerImages:
   handler: src/api/partners.getPartnerImages
   events:

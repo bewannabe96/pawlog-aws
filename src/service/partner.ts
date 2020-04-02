@@ -1,7 +1,4 @@
-import sharp from 'sharp';
-
 import mysqlConn from '../util/mysql';
-import s3Bucket from '../util/s3-bucket';
 
 import { Location, Contact, OperatingHours, Review } from '../model';
 
@@ -175,6 +172,21 @@ namespace PartnerService {
 		return { partnerID: partnerID };
 	};
 
+	export const deletePartner = async (partnerID: string) => {
+		let transaction = mysqlConn.transaction();
+
+		transaction = transaction
+			.query('DELETE FROM review WHERE partnerid=?;', [partnerID])
+			.query('DELETE FROM partnerdetail WHERE partnerid=?;', [partnerID])
+			.query('DELETE FROM ptnrtyperelation WHERE partnerid=?;', [partnerID])
+			.query('DELETE FROM partner WHERE id=?;', [partnerID]);
+
+		await transaction.commit();
+		mysqlConn.end();
+
+		return { partnerID: partnerID };
+	};
+
 	export const getPartnerImages = async (partnerID: string) => {
 		let transaction = mysqlConn.transaction();
 
@@ -219,53 +231,6 @@ namespace PartnerService {
 				};
 			}),
 		};
-	};
-
-	export const uploadPartnerImage = async (
-		partnerID: string,
-		uid: string,
-		data: Buffer,
-	) => {
-		const buffer = await new Promise((resolve, reject) =>
-			sharp(data)
-				.resize({ width: 1024, height: 768, fit: sharp.fit.cover })
-				.jpeg()
-				.toBuffer((error, buffer) => {
-					if (buffer) resolve(buffer);
-					else reject(error);
-				}),
-		);
-
-		await new Promise((resolve, reject) =>
-			s3Bucket.putObject(
-				{
-					Bucket: process.env.PARTNER_IMAGE_BUCKET,
-					ACL: 'public-read',
-					Key: `${partnerID}/${uid}`,
-					ContentType: 'image/jpeg',
-					Body: buffer,
-				},
-				(error, data) => {
-					if (data) resolve(data);
-					else reject(error);
-				},
-			),
-		);
-	};
-
-	export const deleteParnterImage = async (partnerID: string, uid: string) => {
-		await new Promise((resolve, reject) =>
-			s3Bucket.deleteObject(
-				{
-					Bucket: process.env.PARTNER_IMAGE_BUCKET,
-					Key: `${partnerID}/${uid}`,
-				},
-				(error, data) => {
-					if (data) resolve(data);
-					else reject(error);
-				},
-			),
-		);
 	};
 
 	export const getPartnerReviews = async (
