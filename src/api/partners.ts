@@ -8,16 +8,20 @@ import PartnerService from '../service/partner';
 import PartnerImageService from '../service/partner-image';
 
 // listPartners
-export const listPartners: APIGatewayProxyHandler = async event => {
+export const listPartners: APIGatewayProxyHandler = async (event) => {
 	event.queryStringParameters = event.queryStringParameters || {};
 
 	const limit = event.queryStringParameters.limit ?? '10';
 	const offset = event.queryStringParameters.offset ?? '0';
 
+	const type = event.queryStringParameters.type;
+	const area = event.queryStringParameters.area;
+
 	try {
 		const result = await PartnerService.getPartners(
 			parseInt(limit),
 			parseInt(offset),
+			{ type: type, area: area },
 		);
 		return createResponse(200, result);
 	} catch (error) {
@@ -27,7 +31,7 @@ export const listPartners: APIGatewayProxyHandler = async event => {
 };
 
 // createPartner
-export const createPartner: APIGatewayProxyHandler = async event => {
+export const createPartner: APIGatewayProxyHandler = async (event) => {
 	const data = JSON.parse(event.body) as {
 		name: string;
 		types: number[];
@@ -50,7 +54,7 @@ export const createPartner: APIGatewayProxyHandler = async event => {
 };
 
 // getPartnerDetail
-export const getPartnerDetail: APIGatewayProxyHandler = async event => {
+export const getPartnerDetail: APIGatewayProxyHandler = async (event) => {
 	const partnerID = event.pathParameters.partnerID;
 
 	try {
@@ -63,7 +67,7 @@ export const getPartnerDetail: APIGatewayProxyHandler = async event => {
 };
 
 // updatePartnerDetail
-export const updatePartnerDetail: APIGatewayProxyHandler = async event => {
+export const updatePartnerDetail: APIGatewayProxyHandler = async (event) => {
 	const partnerID = event.pathParameters.partnerID;
 	const data = JSON.parse(event.body) as {
 		name: string;
@@ -92,7 +96,7 @@ export const updatePartnerDetail: APIGatewayProxyHandler = async event => {
 };
 
 // deletePartner
-export const deletePartner: APIGatewayProxyHandler = async event => {
+export const deletePartner: APIGatewayProxyHandler = async (event) => {
 	const partnerID = event.pathParameters.partnerID;
 
 	try {
@@ -106,7 +110,7 @@ export const deletePartner: APIGatewayProxyHandler = async event => {
 };
 
 // getPartnerImages
-export const getPartnerImages: APIGatewayProxyHandler = async event => {
+export const getPartnerImages: APIGatewayProxyHandler = async (event) => {
 	const partnerID = event.pathParameters.partnerID;
 
 	try {
@@ -119,7 +123,7 @@ export const getPartnerImages: APIGatewayProxyHandler = async event => {
 };
 
 // updatePartnerImages
-export const updatePartnerImages: APIGatewayProxyHandler = async event => {
+export const updatePartnerImages: APIGatewayProxyHandler = async (event) => {
 	const partnerID = event.pathParameters.partnerID;
 	const data = JSON.parse(event.body) as { uids: string[] };
 
@@ -136,7 +140,7 @@ export const updatePartnerImages: APIGatewayProxyHandler = async event => {
 };
 
 // uploadPartnerImage
-export const uploadPartnerImage: APIGatewayProxyHandler = async event => {
+export const uploadPartnerImage: APIGatewayProxyHandler = async (event) => {
 	const partnerID = event.pathParameters.partnerID;
 	const uid = event.pathParameters.uid;
 	const data = Buffer.from(event.body, 'base64');
@@ -151,7 +155,7 @@ export const uploadPartnerImage: APIGatewayProxyHandler = async event => {
 };
 
 // deletePartnerImage
-export const deletePartnerImage: APIGatewayProxyHandler = async event => {
+export const deletePartnerImage: APIGatewayProxyHandler = async (event) => {
 	const partnerID = event.pathParameters.partnerID;
 	const uid = event.pathParameters.uid;
 
@@ -165,7 +169,7 @@ export const deletePartnerImage: APIGatewayProxyHandler = async event => {
 };
 
 // getPartnerReviews
-export const getPartnerReviews: APIGatewayProxyHandler = async event => {
+export const getPartnerReviews: APIGatewayProxyHandler = async (event) => {
 	event.queryStringParameters = event.queryStringParameters || {};
 
 	const partnerID = event.pathParameters.partnerID;
@@ -186,7 +190,7 @@ export const getPartnerReviews: APIGatewayProxyHandler = async event => {
 };
 
 // createPartnerReview
-export const createPartnerReview: APIGatewayProxyHandler = async event => {
+export const createPartnerReview: APIGatewayProxyHandler = async (event) => {
 	const partnerID = event.pathParameters.partnerID;
 	const data = JSON.parse(event.body) as {
 		userID: string;

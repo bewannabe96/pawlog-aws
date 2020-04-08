@@ -3,16 +3,49 @@ import mysqlConn from '../util/mysql';
 import { Location, Contact, OperatingHours, Review } from '../model';
 
 namespace PartnerService {
-	export const getPartners = async (limit: number, offset: number) => {
+	export const getPartners = async (
+		limit: number,
+		offset: number,
+		filter: { type?: string; area?: string },
+	) => {
+		let filterClause = filter.area ? 'AND areacode=?' : '';
+		const filterValues = filter.area ? [filter.area] : [];
+
 		let transaction = mysqlConn.transaction();
 
-		transaction = transaction
-			.query('SELECT count(id) AS total FROM partner;')
-			.query(
-				'SELECT P.id, P.name, P.areacode, P.rate, P.reviews, GROUP_CONCAT(R.partnertypecode) as types ' +
-					'FROM partner AS P JOIN ptnrtyperelation AS R WHERE P.id=R.partnerid GROUP BY P.id LIMIT ?, ?;',
-				[offset * limit, limit],
-			);
+		transaction = filter.type
+			? transaction
+					.query(
+						`SELECT count(*) AS total
+							FROM partner AS P
+							JOIN ptnrtyperelation AS R ON P.id = R.partnerid AND R.partnertypecode=? 
+							WHERE TRUE ${filterClause};`,
+						[filter.type, ...filterValues],
+					)
+					.query(
+						`SELECT P.id, P.name, P.areacode, P.rate, P.reviews, GROUP_CONCAT(R2.partnertypecode) as types
+							FROM partner AS P
+							JOIN ptnrtyperelation AS R ON P.id = R.partnerid AND R.partnertypecode=?
+							JOIN ptnrtyperelation AS R2 ON P.id = R2.partnerid
+							WHERE TRUE ${filterClause}
+							GROUP BY P.id LIMIT ?, ?;`,
+						[filter.type, ...filterValues, offset * limit, limit],
+					)
+			: transaction
+					.query(
+						`SELECT count(*) AS total
+							FROM partner
+							WHERE TRUE ${filterClause};`,
+						[...filterValues],
+					)
+					.query(
+						`SELECT P.id, P.name, P.areacode, P.rate, P.reviews, GROUP_CONCAT(R.partnertypecode) as types
+							FROM partner AS P
+							JOIN ptnrtyperelation AS R ON P.id=R.partnerid
+							WHERE TRUE ${filterClause}
+							GROUP BY P.id LIMIT ?, ?;`,
+						[...filterValues, offset * limit, limit],
+					);
 
 		const [result1, result2] = await transaction.commit();
 		mysqlConn.end();
@@ -23,7 +56,7 @@ namespace PartnerService {
 				return {
 					id: row.id.toString(),
 					name: row.name,
-					types: row.types.split(',').map((t: any) => parseInt(t)),
+					types: row.types.split(','),
 					areacode: row.areacode,
 					review: {
 						averageRate: row.rate,
@@ -50,7 +83,7 @@ namespace PartnerService {
 			.query('SELECT LAST_INSERT_ID() INTO @insertid;')
 			.query('INSERT INTO partnerdetail (partnerid) VALUES (@insertid);');
 
-		types.forEach(type => {
+		types.forEach((type) => {
 			transaction = transaction.query(
 				'INSERT INTO ptnrtyperelation VALUES (@insertid, ?);',
 				[type],
@@ -159,7 +192,7 @@ namespace PartnerService {
 			)
 			.query('DELETE FROM ptnrtyperelation WHERE partnerid=?;', [partnerID]);
 
-		types.forEach(t => {
+		types.forEach((t) => {
 			transaction = transaction.query(
 				'INSERT INTO ptnrtyperelation VALUES (?, ?);',
 				[partnerID, t],

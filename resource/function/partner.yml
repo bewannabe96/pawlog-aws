@@ -10,6 +10,8 @@ listPartners:
             querystrings:
               limit: false
               offset: false
+              type: false
+              area: false
 
 createPartner:
   handler: src/api/partners.createPartner
