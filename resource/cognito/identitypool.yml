@@ -7,7 +7,7 @@ Resources:
       CognitoIdentityProviders:
         - ClientId:
             Ref: PawlogWebClient
-          ProviderName: !GetAtt PawlogUserPool.ProviderName
+          ProviderName: !GetAtt CognitoUserPoolPawlog.ProviderName
 
   AuthorizedUserIAMRole:
     Type: AWS::IAM::Role

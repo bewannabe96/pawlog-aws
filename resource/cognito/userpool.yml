@@ -1,5 +1,5 @@
 Resources:
-  PawlogUserPool:
+  CognitoUserPoolPawlog:
     Type: AWS::Cognito::UserPool
     Properties:
       UserPoolName: PawlogUserPool
@@ -38,14 +38,14 @@ Resources:
       VerificationMessageTemplate:
         DefaultEmailOption: CONFIRM_WITH_LINK
         EmailSubjectByLink: 'Pawlog Email Confirmation'
-        EmailMessageByLink: 'gogo: {##link##}'
+        EmailMessageByLink: 'Please complete your register: {##link##}'
 
   PawlogUserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
     Properties:
-      Domain: pawloghk
+      Domain: pawlog
       UserPoolId:
-        Ref: PawlogUserPool
+        Ref: CognitoUserPoolPawlog
 
   PawlogUserPoolGoogleIDP:
     Type: AWS::Cognito::UserPoolIdentityProvider
@@ -63,7 +63,7 @@ Resources:
         client_secret: lxku7tA9Ma-cZM1Iq7slFuxs
         authorize_scopes: email profile
       UserPoolId:
-        Ref: PawlogUserPool
+        Ref: CognitoUserPoolPawlog
 
   PawlogUserPoolFacebookIDP:
     Type: AWS::Cognito::UserPoolIdentityProvider
@@ -81,7 +81,7 @@ Resources:
         client_secret: 601671abba8d9b13646876cfebbed47e
         authorize_scopes: public_profile email
       UserPoolId:
-        Ref: PawlogUserPool
+        Ref: CognitoUserPoolPawlog
 
   PawlogWebClient:
     Type: AWS::Cognito::UserPoolClient
@@ -91,11 +91,11 @@ Resources:
     Properties:
       ClientName: PawlogWebClient
       UserPoolId:
-        Ref: PawlogUserPool
+        Ref: CognitoUserPoolPawlog
       CallbackURLs:
-        - http://localhost:3000/
+        - https://d3a6bgw1ys94vt.cloudfront.net/
       LogoutURLs:
-        - http://localhost:3000/
+        - https://d3a6bgw1ys94vt.cloudfront.net/
       AllowedOAuthFlows:
         - implicit
       AllowedOAuthFlowsUserPoolClient: true

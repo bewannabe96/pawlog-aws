@@ -3,6 +3,35 @@ import mysqlConn from '../util/mysql';
 import { Location, Contact, OperatingHours, Review } from '../model';
 
 namespace PartnerService {
+	export const createPartner = async (
+		name: string,
+		types: number[],
+		areacode: number,
+		location: Location,
+	) => {
+		let transaction = mysqlConn.transaction();
+
+		transaction = transaction
+			.query(
+				'INSERT INTO partner (name, areacode, address, lat, lng) VALUES (?, ?, ?, ?, ?);',
+				[name, areacode, location.address, location.lat, location.lng],
+			)
+			.query('SELECT LAST_INSERT_ID() INTO @insertid;')
+			.query('INSERT INTO partnerdetail (partnerid) VALUES (@insertid);');
+
+		types.forEach((type) => {
+			transaction = transaction.query(
+				'INSERT INTO ptnrtyperelation VALUES (@insertid, ?);',
+				[type],
+			);
+		});
+
+		const [result1] = await transaction.commit();
+		mysqlConn.end();
+
+		return { partnerID: `${result1.insertId}` };
+	};
+
 	export const getPartners = async (
 		limit: number,
 		offset: number,
@@ -65,35 +94,6 @@ namespace PartnerService {
 				};
 			}),
 		};
-	};
-
-	export const createPartner = async (
-		name: string,
-		types: number[],
-		areacode: number,
-		location: Location,
-	) => {
-		let transaction = mysqlConn.transaction();
-
-		transaction = transaction
-			.query(
-				'INSERT INTO partner (name, areacode, address, lat, lng) VALUES (?, ?, ?, ?, ?);',
-				[name, areacode, location.address, location.lat, location.lng],
-			)
-			.query('SELECT LAST_INSERT_ID() INTO @insertid;')
-			.query('INSERT INTO partnerdetail (partnerid) VALUES (@insertid);');
-
-		types.forEach((type) => {
-			transaction = transaction.query(
-				'INSERT INTO ptnrtyperelation VALUES (@insertid, ?);',
-				[type],
-			);
-		});
-
-		const [result1] = await transaction.commit();
-		mysqlConn.end();
-
-		return { partnerID: `${result1.insertId}` };
 	};
 
 	export const getPartnerDetail = async (partnerID: string) => {

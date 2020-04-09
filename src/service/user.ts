@@ -1,6 +1,23 @@
 import mysqlConn from '../util/mysql';
 
 namespace UserService {
+	export const createUser = async (
+		sub: string,
+		email: string,
+		name: string,
+		picture: string,
+	) => {
+		let transaction = mysqlConn.transaction();
+
+		transaction = transaction.query(
+			'INSERT INTO user (sub, email, name, picture) VALUES (?, ?, ?, ?);',
+			[sub, email, name, picture],
+		);
+
+		await transaction.commit();
+		mysqlConn.end();
+	};
+
 	export const getUser = async (sub: string) => {
 		let transaction = mysqlConn.transaction();
 

@@ -50,13 +50,20 @@ provider:
             - '/*'
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
-    DB_HOST: 127.0.0.1
-    # DB_HOST: !GetAtt PawlogRDS.Endpoint.Address
+    # DB_HOST: 127.0.0.1
+    DB_HOST: !GetAtt PawlogRDS.Endpoint.Address
     DB_NAME: pawlog
     DB_USER: admin
     DB_PSWD: godqhrgkwk
     PARTNER_IMAGE_BUCKET: !Ref S3BucketPartnerImage
     PARTNER_IMAGE_BUCKET_DOMAIN: !GetAtt S3BucketPartnerImage.RegionalDomainName
+
+functions:
+  - ${file(./resource/trigger/cognito.yml)}
+
+  - ${file(./resource/function/config.yml)}
+  - ${file(./resource/function/partner.yml)}
+  - ${file(./resource/function/user.yml)}
 
 resources:
   - ${file(./resource/vpc/vpc.yml)}
@@ -72,8 +79,3 @@ resources:
 
   - ${file(./resource/rds.yml)}
   - ${file(./resource/s3-bucket-partner-image.yml)}
-
-functions:
-  - ${file(./resource/function/config.yml)}
-  - ${file(./resource/function/partner.yml)}
-  - ${file(./resource/function/user.yml)}
