@@ -52,7 +52,7 @@ namespace PartnerService {
 						[filter.type, ...filterValues],
 					)
 					.query(
-						`SELECT P.id, P.name, P.areacode, P.rate, P.reviews, GROUP_CONCAT(R2.partnertypecode) as types
+						`SELECT P.id, P.images, P.name, P.areacode, P.rate, P.reviews, GROUP_CONCAT(R2.partnertypecode) as types
 							FROM partner AS P
 							JOIN ptnrtyperelation AS R ON P.id = R.partnerid AND R.partnertypecode=?
 							JOIN ptnrtyperelation AS R2 ON P.id = R2.partnerid
@@ -68,7 +68,7 @@ namespace PartnerService {
 						[...filterValues],
 					)
 					.query(
-						`SELECT P.id, P.name, P.areacode, P.rate, P.reviews, GROUP_CONCAT(R.partnertypecode) as types
+						`SELECT P.id, P.images, P.name, P.areacode, P.rate, P.reviews, GROUP_CONCAT(R.partnertypecode) as types
 							FROM partner AS P
 							JOIN ptnrtyperelation AS R ON P.id=R.partnerid
 							WHERE TRUE ${filterClause}
@@ -82,8 +82,17 @@ namespace PartnerService {
 		return {
 			total: result1[0].total,
 			partners: result2.map((row: any) => {
+				const imageUID = row.images.split(':')[0];
+
 				return {
 					id: row.id.toString(),
+					image:
+						imageUID === ''
+							? null
+							: {
+									uid: imageUID,
+									url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${row.id}/${imageUID}`,
+							  },
 					name: row.name,
 					types: row.types.split(','),
 					areacode: row.areacode,
