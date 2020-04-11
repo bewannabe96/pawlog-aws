@@ -15,9 +15,10 @@ export const onConfirmation: CognitoUserPoolTriggerHandler = async (
 	const name = event.request.userAttributes['name'];
 	let picture = event.request.userAttributes['picture'];
 
-	const identities = JSON.parse(event.request.userAttributes['identities'])[0];
-	if (identities.providerName === 'Facebook')
-		picture = JSON.parse(picture).data.url;
+	const provider =
+		event.request.userAttributes['identities'] &&
+		JSON.parse(event.request.userAttributes['identities'])[0].providerName;
+	if (provider === 'Facebook') picture = JSON.parse(picture).data.url;
 
 	try {
 		await UserService.createUser(sub, email, name, picture);
