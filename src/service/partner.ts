@@ -13,8 +13,8 @@ namespace PartnerService {
 
 		transaction = transaction
 			.query(
-				'INSERT INTO partner (name, areacode, address, lat, lng) VALUES (?, ?, ?, ?, ?);',
-				[name, areacode, location.address, location.lat, location.lng],
+				'INSERT INTO partner (images, name, areacode, address, lat, lng) VALUES (?, ?, ?, ?, ?, ?);',
+				['', name, areacode, location.address, location.lat, location.lng],
 			)
 			.query('SELECT LAST_INSERT_ID() INTO @insertid;')
 			.query('INSERT INTO partnerdetail (partnerid) VALUES (@insertid);');
