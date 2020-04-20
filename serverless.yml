@@ -50,8 +50,8 @@ provider:
             - '/*'
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
-    DB_HOST: 127.0.0.1
-    # DB_HOST: !GetAtt PawlogRDS.Endpoint.Address
+    # DB_HOST: 127.0.0.1
+    DB_HOST: !GetAtt PawlogRDS.Endpoint.Address
     DB_NAME: pawlog
     DB_USER: admin
     DB_PSWD: godqhrgkwk
