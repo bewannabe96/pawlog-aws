@@ -8,10 +8,15 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
+		"@types/jsonwebtoken": "^8.3.9",
+		"@types/jwk-to-pem": "^2.0.0",
 		"@types/mysql": "^2.15.9",
 		"@types/sharp": "^0.24.0",
 		"@types/uuid": "^7.0.0",
 		"aws-sdk": "^2.635.0",
+		"axios": "^0.19.2",
+		"jsonwebtoken": "^8.5.1",
+		"jwk-to-pem": "^2.0.3",
 		"serverless-mysql": "^1.5.3",
 		"sharp": "^0.25.2",
 		"source-map-support": "^0.5.16",

@@ -4,6 +4,7 @@ getUser:
     - http:
         path: users
         method: get
+        authorizer: customAuthorizer
         cors: true
         request:
           parameters:

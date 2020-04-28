@@ -59,11 +59,16 @@ provider:
     PARTNER_IMAGE_BUCKET_DOMAIN: !GetAtt S3BucketPartnerImage.RegionalDomainName
 
 functions:
+  - customAuthorizer:
+      handler: src/authorizer.handler
+      environment:
+        COGNITO_PROVIDER_URL: !GetAtt CognitoUserPoolPawlog.ProviderURL
+
   - ${file(./resource/trigger/cognito.yml)}
 
-  - ${file(./resource/function/config.yml)}
-  - ${file(./resource/function/partner.yml)}
-  - ${file(./resource/function/user.yml)}
+  - ${file(./resource/api/config.yml)}
+  - ${file(./resource/api/partner.yml)}
+  - ${file(./resource/api/user.yml)}
 
 resources:
   - ${file(./resource/vpc/vpc.yml)}
