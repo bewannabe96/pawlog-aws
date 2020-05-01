@@ -35,10 +35,20 @@ namespace PartnerService {
 	export const getPartners = async (
 		limit: number,
 		offset: number,
-		filter: { type?: string; area?: string },
+		filter: { query?: string; type?: string; area?: string },
 	) => {
-		let filterClause = filter.area ? 'AND areacode=?' : '';
-		const filterValues = filter.area ? [filter.area] : [];
+		let filterClause = '';
+		const filterValues = [];
+
+		if (filter.query) {
+			filterClause +=
+				'AND MATCH(name) AGAINST (? IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION)';
+			filterValues.push(filter.query);
+		}
+		if (filter.area) {
+			filterClause += 'AND areacode=?';
+			filterValues.push(filter.area);
+		}
 
 		let transaction = mysqlConn.transaction();
 

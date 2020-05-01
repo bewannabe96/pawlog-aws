@@ -14,6 +14,7 @@ export const listPartners: APIGatewayProxyHandler = async (event) => {
 	const limit = event.queryStringParameters.limit ?? '10';
 	const offset = event.queryStringParameters.offset ?? '0';
 
+	const query = event.queryStringParameters.q;
 	const type = event.queryStringParameters.type;
 	const area = event.queryStringParameters.area;
 
@@ -21,7 +22,7 @@ export const listPartners: APIGatewayProxyHandler = async (event) => {
 		const result = await PartnerService.getPartners(
 			parseInt(limit),
 			parseInt(offset),
-			{ type: type, area: area },
+			{ query, type, area },
 		);
 		return createResponse(200, result);
 	} catch (error) {
