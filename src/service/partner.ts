@@ -41,8 +41,7 @@ namespace PartnerService {
 		const filterValues = [];
 
 		if (filter.query) {
-			filterClause +=
-				'AND MATCH(name) AGAINST (? IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION)';
+			filterClause += 'AND MATCH(name) AGAINST (? IN NATURAL LANGUAGE MODE)';
 			filterValues.push(filter.query);
 		}
 		if (filter.area) {
@@ -67,8 +66,20 @@ namespace PartnerService {
 							JOIN ptnrtyperelation AS R ON P.id = R.partnerid AND R.partnertypecode=?
 							JOIN ptnrtyperelation AS R2 ON P.id = R2.partnerid
 							WHERE TRUE ${filterClause}
-							GROUP BY P.id LIMIT ?, ?;`,
-						[filter.type, ...filterValues, offset * limit, limit],
+							GROUP BY P.id
+							${
+								filter.query
+									? 'ORDER BY MATCH(name) AGAINST (? IN NATURAL LANGUAGE MODE) DESC'
+									: ''
+							}
+							LIMIT ?, ?;`,
+						[
+							filter.type,
+							...filterValues,
+							...(filter.query ? [filter.query] : []),
+							offset * limit,
+							limit,
+						],
 					)
 			: transaction
 					.query(
@@ -82,8 +93,19 @@ namespace PartnerService {
 							FROM partner AS P
 							JOIN ptnrtyperelation AS R ON P.id=R.partnerid
 							WHERE TRUE ${filterClause}
-							GROUP BY P.id LIMIT ?, ?;`,
-						[...filterValues, offset * limit, limit],
+							GROUP BY P.id
+							${
+								filter.query
+									? 'ORDER BY MATCH(name) AGAINST (? IN NATURAL LANGUAGE MODE) DESC'
+									: ''
+							}
+							LIMIT ?, ?;`,
+						[
+							...filterValues,
+							...(filter.query ? [filter.query] : []),
+							offset * limit,
+							limit,
+						],
 					);
 
 		const [result1, result2] = await transaction.commit();
