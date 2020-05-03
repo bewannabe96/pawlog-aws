@@ -370,6 +370,29 @@ namespace PartnerService {
 			review: review,
 		};
 	};
+
+	export const deletePartnerReview = async (
+		partnerID: string,
+		reviewID: string,
+	) => {
+		let transaction = mysqlConn.transaction();
+
+		transaction = transaction
+			.query('SELECT rate INTO @rate FROM review WHERE id=?;', [reviewID])
+			.query('DELETE FROM review WHERE partnerid=? AND id=?', [
+				partnerID,
+				reviewID,
+			])
+			.query(
+				'UPDATE partner SET rate=((rate*reviews)-@rate)/(reviews-1), reviews=reviews-1 WHERE id=?;',
+				[partnerID],
+			);
+
+		await transaction.commit();
+		mysqlConn.end();
+
+		return { reviewID: reviewID };
+	};
 }
 
 export default PartnerService;

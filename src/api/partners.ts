@@ -210,3 +210,20 @@ export const createPartnerReview: APIGatewayProxyHandler = async (event) => {
 		return createResponse(500, error);
 	}
 };
+
+// deletePartnerReview
+export const deletePartnerReview: APIGatewayProxyHandler = async (event) => {
+	const partnerID = event.pathParameters.partnerID;
+	const reviewID = event.pathParameters.reviewID;
+
+	try {
+		const result = await PartnerService.deletePartnerReview(
+			partnerID,
+			reviewID,
+		);
+		return createResponse(200, result);
+	} catch (error) {
+		console.log(error);
+		return createResponse(500, error);
+	}
+};

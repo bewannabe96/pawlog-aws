@@ -140,3 +140,17 @@ createPartnerReview:
           parameters:
             paths:
               partnerID: true
+
+deletePartnerReview:
+  handler: src/api/partners.deletePartnerReview
+  events:
+    - http:
+        path: partners/{partnerID}/reviews/{reviewID}
+        method: delete
+        authorizer: customAuthorizer
+        cors: true
+        request:
+          parameters:
+            paths:
+              partnerID: true
+              reviewID: true
