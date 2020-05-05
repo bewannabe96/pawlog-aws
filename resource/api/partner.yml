@@ -154,3 +154,15 @@ deletePartnerReview:
             paths:
               partnerID: true
               reviewID: true
+
+getPartnerGoogleReviews:
+  handler: src/api/partners.getPartnerGoogleReviews
+  events:
+    - http:
+        path: partners/{partnerID}/googleReviews
+        method: get
+        cors: true
+        request:
+          parameters:
+            paths:
+              partnerID: true

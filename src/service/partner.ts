@@ -61,7 +61,7 @@ namespace PartnerService {
 						[filter.type, ...filterValues],
 					)
 					.query(
-						`SELECT P.id, P.images, P.name, P.areacode, P.rate, P.reviews, GROUP_CONCAT(R2.partnertypecode) as types
+						`SELECT P.id, P.images, P.name, P.areacode, rate, reviews, googlerate, googlereviews, GROUP_CONCAT(R2.partnertypecode) as types
 							FROM partner AS P
 							JOIN ptnrtyperelation AS R ON P.id = R.partnerid AND R.partnertypecode=?
 							JOIN ptnrtyperelation AS R2 ON P.id = R2.partnerid
@@ -89,7 +89,7 @@ namespace PartnerService {
 						[...filterValues],
 					)
 					.query(
-						`SELECT P.id, P.images, P.name, P.areacode, P.rate, P.reviews, GROUP_CONCAT(R.partnertypecode) as types
+						`SELECT P.id, P.images, P.name, P.areacode, rate, reviews, googlerate, googlereviews, GROUP_CONCAT(R.partnertypecode) as types
 							FROM partner AS P
 							JOIN ptnrtyperelation AS R ON P.id=R.partnerid
 							WHERE TRUE ${filterClause}
@@ -129,8 +129,10 @@ namespace PartnerService {
 					types: row.types.split(','),
 					areacode: row.areacode,
 					review: {
-						averageRate: row.rate,
-						count: row.reviews,
+						averageRate:
+							(row.rate * row.reviews + row.googlerate * row.googlereviews) /
+							(row.reviews + row.googlereviews),
+						count: row.reviews + row.googlereviews,
 					},
 				};
 			}),
@@ -142,7 +144,7 @@ namespace PartnerService {
 
 		transaction = transaction
 			.query(
-				'SELECT id, name, areacode, rate, reviews, address, lat, lng, registered, updated FROM partner WHERE id=?;',
+				'SELECT id, name, areacode, rate, reviews, googlerate, googlereviews, address, lat, lng, registered, updated FROM partner WHERE id=?;',
 				[partnerID],
 			)
 			.query(
@@ -168,8 +170,11 @@ namespace PartnerService {
 				lng: result1[0].lng,
 			},
 			review: {
-				averageRate: result1[0].rate,
-				count: result1[0].reviews,
+				averageRate:
+					(result1[0].rate * result1[0].reviews +
+						result1[0].googlerate * result1[0].googlereviews) /
+					(result1[0].reviews + result1[0].googlereviews),
+				count: result1[0].reviews + result1[0].googlereviews,
 			},
 			detail: {
 				operatingHours: {
@@ -392,6 +397,36 @@ namespace PartnerService {
 		mysqlConn.end();
 
 		return { reviewID: reviewID };
+	};
+
+	export const getPartnerGoogleReviews = async (partnerID: string) => {
+		let transaction = mysqlConn.transaction();
+
+		transaction = transaction
+			.query('SELECT count(id) AS total FROM googlereview;')
+			.query(
+				'SELECT id, name, photo, rate, content, created FROM googlereview WHERE partnerid=? ORDER BY created DESC;',
+				[partnerID],
+			);
+
+		const [result1, result2] = await transaction.commit();
+		mysqlConn.end();
+
+		return {
+			total: result1[0].total,
+			reviews: result2.map((row: any) => {
+				return {
+					reviewID: row.id,
+					name: row.name,
+					photo: row.photo,
+					review: {
+						rate: row.rate,
+						content: row.content,
+					},
+					created: row.created,
+				};
+			}),
+		};
 	};
 }
 

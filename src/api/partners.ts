@@ -227,3 +227,18 @@ export const deletePartnerReview: APIGatewayProxyHandler = async (event) => {
 		return createResponse(500, error);
 	}
 };
+
+// getPartnerGoogleReviews
+export const getPartnerGoogleReviews: APIGatewayProxyHandler = async (
+	event,
+) => {
+	const partnerID = event.pathParameters.partnerID;
+
+	try {
+		const result = await PartnerService.getPartnerGoogleReviews(partnerID);
+		return createResponse(200, result);
+	} catch (error) {
+		console.log(error);
+		return createResponse(500, error);
+	}
+};
