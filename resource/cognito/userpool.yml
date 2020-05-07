@@ -93,9 +93,9 @@ Resources:
       UserPoolId:
         Ref: CognitoUserPoolPawlog
       CallbackURLs:
-        - https://d292pt9s73u2t3.cloudfront.net
+        - https://www.pawloghk.com
       LogoutURLs:
-        - https://d292pt9s73u2t3.cloudfront.net
+        - https://www.pawloghk.com
       AllowedOAuthFlows:
         - implicit
       AllowedOAuthFlowsUserPoolClient: true
