@@ -13,3 +13,19 @@ listPartnerTypes:
         path: configs/partnerType
         method: get
         cors: true
+
+listPetTypes:
+  handler: src/api/configs.listPetTypes
+  events:
+    - http:
+        path: configs/petType
+        method: get
+        cors: true
+
+listQuestionCategory:
+  handler: src/api/configs.listQuestionCategory
+  events:
+    - http:
+        path: configs/questionCategory
+        method: get
+        cors: true

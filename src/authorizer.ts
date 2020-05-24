@@ -68,24 +68,6 @@ const verifyJWT = async (token: string) => {
 
 export const handler = async (event, _, callback) => {
 	try {
-		// parse the ARN from the incoming event
-		// const tmp = event.methodArn.split(':');
-		// const apiGatewayArnTmp = tmp[5].split('/');
-
-		// const awsAccountId = tmp[4];
-		// const apiOptions = {
-		// 	region: tmp[3],
-		// 	restApiId: apiGatewayArnTmp[0],
-		// 	stage: apiGatewayArnTmp[1],
-		// };
-		// const method = apiGatewayArnTmp[2];
-		// const path = '/' + apiGatewayArnTmp.slice(3).join('/');
-
-		// console.log(awsAccountId);
-		// console.log(apiOptions);
-		// console.log(method);
-		// console.log(path);
-
 		await verifyJWT(event.authorizationToken);
 
 		callback(null, {

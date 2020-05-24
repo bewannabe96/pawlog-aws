@@ -53,8 +53,8 @@ provider:
     DB_HOST: 127.0.0.1
     # DB_HOST: !GetAtt PawlogRDS.Endpoint.Address
     DB_NAME: pawlog
-    DB_USER: admin
-    DB_PSWD: godqhrgkwk
+    DB_USER: api
+    DB_PSWD: aNDXJs3WGqUgXcJAXFcGG7xuB35eVV
     PARTNER_IMAGE_BUCKET: !Ref S3BucketPartnerImage
     PARTNER_IMAGE_BUCKET_DOMAIN: !GetAtt S3BucketPartnerImage.RegionalDomainName
 

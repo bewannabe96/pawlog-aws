@@ -18,6 +18,24 @@ namespace ConfigService {
 
 		return result;
 	};
+
+	export const getPetTypes = async () => {
+		const query = 'SELECT code, name FROM pettype;';
+
+		const result = await mysqlConn.query(query);
+		mysqlConn.end();
+
+		return result;
+	};
+
+	export const getQuestionCategory = async () => {
+		const query = 'SELECT code, name FROM qstncategory;';
+
+		const result = await mysqlConn.query(query);
+		mysqlConn.end();
+
+		return result;
+	};
 }
 
 export default ConfigService;

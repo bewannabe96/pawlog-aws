@@ -61,7 +61,7 @@ namespace PartnerService {
 						[filter.type, ...filterValues],
 					)
 					.query(
-						`SELECT P.id, P.images, P.name, P.areacode, rate, reviews, googlerate, googlereviews, GROUP_CONCAT(R2.partnertypecode) as types
+						`SELECT P.id, P.images, P.name, P.areacode, rate, reviews, googlerate, googlereviews, GROUP_CONCAT(R2.partnertypecode) AS types
 							FROM partner AS P
 							JOIN ptnrtyperelation AS R ON P.id = R.partnerid AND R.partnertypecode=?
 							JOIN ptnrtyperelation AS R2 ON P.id = R2.partnerid
@@ -89,7 +89,7 @@ namespace PartnerService {
 						[...filterValues],
 					)
 					.query(
-						`SELECT P.id, P.images, P.name, P.areacode, rate, reviews, googlerate, googlereviews, GROUP_CONCAT(R.partnertypecode) as types
+						`SELECT P.id, P.images, P.name, P.areacode, rate, reviews, googlerate, googlereviews, GROUP_CONCAT(R.partnertypecode) AS types
 							FROM partner AS P
 							JOIN ptnrtyperelation AS R ON P.id=R.partnerid
 							WHERE TRUE ${filterClause}
@@ -322,7 +322,14 @@ namespace PartnerService {
 		transaction = transaction
 			.query('SELECT count(id) AS total FROM review;')
 			.query(
-				'SELECT U.id AS userid, U.email, U.name, U.picture, R.id AS reviewid, R.rate, R.content, R.created FROM review AS R JOIN user AS U WHERE U.id=R.userid && partnerid=? ORDER BY created DESC LIMIT ?, ?;',
+				`
+				SELECT U.id AS userid, U.email, U.name, U.picture, R.id AS reviewid, R.rate, R.content, R.created
+				FROM review AS R
+				JOIN user AS U
+				WHERE U.id=R.userid && partnerid=?
+				ORDER BY created DESC
+				LIMIT ?, ?;
+				`,
 				[partnerID, offset * limit, limit],
 			);
 

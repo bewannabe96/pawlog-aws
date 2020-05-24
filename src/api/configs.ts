@@ -25,3 +25,25 @@ export const listPartnerTypes: APIGatewayProxyHandler = async () => {
 		return createResponse(500, error);
 	}
 };
+
+// listPetTypes
+export const listPetTypes: APIGatewayProxyHandler = async () => {
+	try {
+		const result = await ConfigService.getPetTypes();
+		return createResponse(200, result);
+	} catch (error) {
+		console.log(error);
+		return createResponse(500, error);
+	}
+};
+
+// listQuestionCategory
+export const listQuestionCategory: APIGatewayProxyHandler = async () => {
+	try {
+		const result = await ConfigService.getPartnerTypes();
+		return createResponse(200, result);
+	} catch (error) {
+		console.log(error);
+		return createResponse(500, error);
+	}
+};
