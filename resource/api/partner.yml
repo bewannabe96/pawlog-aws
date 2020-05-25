@@ -5,13 +5,6 @@ listPartners:
         path: partners
         method: get
         cors: true
-        request:
-          parameters:
-            querystrings:
-              limit: false
-              offset: false
-              type: false
-              area: false
 
 createPartner:
   handler: src/api/partners.createPartner
@@ -124,9 +117,6 @@ getPartnerReviews:
           parameters:
             paths:
               partnerID: true
-            querystrings:
-              limit: false
-              offset: false
 
 createPartnerReview:
   handler: src/api/partners.createPartnerReview

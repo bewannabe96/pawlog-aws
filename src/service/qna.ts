@@ -1,6 +1,30 @@
 import mysqlConn from '../util/mysql';
 
 namespace QnAService {
+	export const createQuestion = async (
+		userID: string,
+		categoryCode: string | null,
+		freeCategory: string | null,
+		pettype: string | null,
+		title: string,
+		content: string,
+	) => {
+		let transaction = mysqlConn.transaction();
+
+		transaction = transaction.query(
+			`
+			INSERT INTO question (userid, category, etccategory, pettype, title, content)
+				VALUES (?, ?, ?, ?, ?, ?);
+			`,
+			[userID, categoryCode, freeCategory, pettype, title, content],
+		);
+
+		const [result1] = await transaction.commit();
+		mysqlConn.end();
+
+		return { partnerID: `${result1.insertId}` };
+	};
+
 	export const getQuestions = async (
 		limit: number,
 		offset: number,
@@ -64,6 +88,153 @@ namespace QnAService {
 				answers: row.answers,
 			})),
 		};
+	};
+
+	export const getQuestionDetail = async (questionID: string) => {
+		let transaction = mysqlConn.transaction();
+
+		transaction = transaction.query(
+			`
+				SELECT P.id, P.category, P.etccategory, P.pettype, P.title, P.content, P.answers, P.created, P.updated,
+					U.id AS userid, U.email, U.name, U.picture
+				FROM partner AS P
+				JOIN user AS U ON Q.userid = U.id
+				WHERE id=?;
+				`,
+			[questionID],
+		);
+
+		const [result1] = await transaction.commit();
+		mysqlConn.end();
+
+		return {
+			id: questionID,
+			user: {
+				id: result1[0].userid,
+				name: result1[0].name,
+				email: result1[0].email,
+				picture: result1[0].picture,
+			},
+			category: {
+				code: result1[0].category,
+				free: result1[0].etccategory,
+			},
+			pettype: result1[0].pettype,
+			title: result1[0].title,
+			content: result1[0].content,
+			answers: result1[0].answers,
+			created: result1[0].created,
+			updated: result1[0].updated,
+		};
+	};
+
+	export const deleteQuestion = async (questionID: string) => {
+		let transaction = mysqlConn.transaction();
+
+		transaction = transaction
+			.query('DELETE FROM answer WHERE questionid=?;', [questionID])
+			.query('DELETE FROM question WHERE id=?;', [questionID]);
+
+		await transaction.commit();
+		mysqlConn.end();
+
+		return { questionID: questionID };
+	};
+
+	export const getAnswers = async (questionID: string) => {
+		let transaction = mysqlConn.transaction();
+
+		transaction = transaction.query(
+			`
+				SELECT A.id, A.content, A.selected, A.refpartner, A.created
+					P.images, P.name AS partnername, P.areacode, P.rate, P.reviews, P.googlerate, P.googlereviews,
+					U.id AS userid, U.email, U.name AS username, U.picture
+				FROM answer AS A
+				JOIN user AS U ON A.userid = U.id
+				JOIN partner AS P ON A.refpartner = P.id
+				WHERE questionid=?
+				ORDER BY created DESC;
+				`,
+			[questionID],
+		);
+
+		const [result1] = await transaction.commit();
+		mysqlConn.end();
+
+		return {
+			reviews: result1.map((row: any) => {
+				const imageUID = row.images.split(':')[0];
+
+				return {
+					user: {
+						id: row.userid,
+						name: row.username,
+						email: row.email,
+						picture: row.picture,
+					},
+					answerID: row.id,
+					content: row.content,
+					selected: row.selected === 1,
+					refPartner: {
+						id: row.refpartner,
+						image:
+							imageUID === ''
+								? null
+								: {
+										uid: imageUID,
+										url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${row.id}/${imageUID}`,
+								  },
+						name: row.partnername,
+						areacode: row.areacode,
+						review: {
+							averageRate:
+								(row.rate * row.reviews + row.googlerate * row.googlereviews) /
+								(row.reviews + row.googlereviews),
+							count: row.reviews + row.googlereviews,
+						},
+					},
+					created: row.created,
+				};
+			}),
+		};
+	};
+
+	export const createAnswer = async (
+		userID: string,
+		questionID: string,
+		content: string,
+		refPartnerID: string | null,
+	) => {
+		let transaction = mysqlConn.transaction();
+
+		transaction = transaction.query(
+			`
+			INSERT INTO answer (questionid, userid, content, refpartner)
+				VALUES (?, ?, ?, ?);
+			`,
+			[questionID, userID, content, refPartnerID],
+		);
+
+		const [result1] = await transaction.commit();
+		mysqlConn.end();
+
+		return { answerID: `${result1.insertId}` };
+	};
+
+	export const deleteAnswer = async (questionID: string, answerID: string) => {
+		let transaction = mysqlConn.transaction();
+
+		transaction = transaction.query(
+			`
+			DELETE FROM answer WHERE id=? AND questionid=?;
+			`,
+			[answerID, questionID],
+		);
+
+		await transaction.commit();
+		mysqlConn.end();
+
+		return { answerID: answerID };
 	};
 }
 

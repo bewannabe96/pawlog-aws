@@ -67,8 +67,9 @@ functions:
   - ${file(./resource/trigger/cognito.yml)}
 
   - ${file(./resource/api/config.yml)}
-  - ${file(./resource/api/partner.yml)}
   - ${file(./resource/api/user.yml)}
+  - ${file(./resource/api/partner.yml)}
+  - ${file(./resource/api/qna.yml)}
 
 resources:
   - ${file(./resource/vpc/vpc.yml)}

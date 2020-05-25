@@ -1,0 +1,80 @@
+listQuestions:
+  handler: src/api/qnas.listQuestions
+  events:
+    - http:
+        path: qnas
+        method: get
+        cors: true
+
+createQuestion:
+  handler: src/api/qnas.createQuestion
+  events:
+    - http:
+        path: qnas
+        method: post
+        authorizer: customAuthorizer
+        cors: true
+
+getQuestionDetail:
+  handler: src/api/qnas.getQuestionDetail
+  events:
+    - http:
+        path: qnas/{questionID}
+        method: get
+        cors: true
+        request:
+          parameters:
+            paths:
+              questionID: true
+
+deleteQuestion:
+  handler: src/api/qnas.deleteQuestion
+  events:
+    - http:
+        path: qnas/{questionID}
+        method: delete
+        authorizer: customAuthorizer
+        cors: true
+        request:
+          parameters:
+            paths:
+              questionID: true
+
+listAnswers:
+  handler: src/api/qnas.listAnswers
+  events:
+    - http:
+        path: qnas/{questionID}/answers
+        method: get
+        cors: true
+        request:
+          parameters:
+            paths:
+              questionID: true
+
+createAnswer:
+  handler: src/api/qnas.createAnswer
+  events:
+    - http:
+        path: qnas/{questionID}/answers
+        method: post
+        authorizer: customAuthorizer
+        cors: true
+        request:
+          parameters:
+            paths:
+              questionID: true
+
+deleteAnswer:
+  handler: src/api/qnas.deleteAnswer
+  events:
+    - http:
+        path: qnas/{questionID}/answers/{answerID}
+        method: delete
+        authorizer: customAuthorizer
+        cors: true
+        request:
+          parameters:
+            paths:
+              questionID: true
+              answerID: true
