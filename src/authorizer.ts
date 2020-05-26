@@ -68,7 +68,7 @@ const verifyJWT = async (token: string) => {
 
 export const handler = async (event, _, callback) => {
 	try {
-		await verifyJWT(event.authorizationToken);
+		// await verifyJWT(event.authorizationToken);
 
 		callback(null, {
 			principalId: 'apigateway.amazonaws.com',

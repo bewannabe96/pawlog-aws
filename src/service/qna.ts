@@ -3,7 +3,7 @@ import mysqlConn from '../util/mysql';
 namespace QnAService {
 	export const createQuestion = async (
 		userID: string,
-		categoryCode: string | null,
+		category: string,
 		freeCategory: string | null,
 		pettype: string | null,
 		title: string,
@@ -16,13 +16,13 @@ namespace QnAService {
 			INSERT INTO question (userid, category, etccategory, pettype, title, content)
 				VALUES (?, ?, ?, ?, ?, ?);
 			`,
-			[userID, categoryCode, freeCategory, pettype, title, content],
+			[userID, category, freeCategory, pettype, title, content],
 		);
 
 		const [result1] = await transaction.commit();
 		mysqlConn.end();
 
-		return { partnerID: `${result1.insertId}` };
+		return { questionID: `${result1.insertId}` };
 	};
 
 	export const getQuestions = async (
@@ -61,11 +61,10 @@ namespace QnAService {
 			)
 			.query(
 				`
-				SELECT Q.id, Q.title, Q.answers, U.id AS userid, U.email, U.name, U.picture
+				SELECT Q.id, Q.category, Q.pettype, Q.title, Q.answers, U.id AS userid, U.email, U.name, U.picture
 				FROM question AS Q
 				JOIN user AS U ON Q.userid = U.id
 				WHERE TRUE ${filterClause}
-				GROUP BY Q.id
 				LIMIT ?, ?;
 				`,
 				[...filterValues, offset * limit, limit],
@@ -84,6 +83,11 @@ namespace QnAService {
 					email: row.email,
 					picture: row.picture,
 				},
+				category: {
+					code: row.category,
+					free: row.etccategory,
+				},
+				pettype: row.pettype,
 				title: row.title,
 				answers: row.answers,
 			})),
@@ -95,11 +99,11 @@ namespace QnAService {
 
 		transaction = transaction.query(
 			`
-				SELECT P.id, P.category, P.etccategory, P.pettype, P.title, P.content, P.answers, P.created, P.updated,
+				SELECT Q.id, Q.category, Q.etccategory, Q.pettype, Q.title, Q.content, Q.answers, Q.created, Q.updated,
 					U.id AS userid, U.email, U.name, U.picture
-				FROM partner AS P
+				FROM question AS Q
 				JOIN user AS U ON Q.userid = U.id
-				WHERE id=?;
+				WHERE Q.id=?;
 				`,
 			[questionID],
 		);
@@ -146,7 +150,7 @@ namespace QnAService {
 
 		transaction = transaction.query(
 			`
-				SELECT A.id, A.content, A.selected, A.refpartner, A.created
+				SELECT A.id, A.content, A.selected, A.refpartner, A.created,
 					P.images, P.name AS partnername, P.areacode, P.rate, P.reviews, P.googlerate, P.googlereviews,
 					U.id AS userid, U.email, U.name AS username, U.picture
 				FROM answer AS A
@@ -162,7 +166,7 @@ namespace QnAService {
 		mysqlConn.end();
 
 		return {
-			reviews: result1.map((row: any) => {
+			answers: result1.map((row: any) => {
 				const imageUID = row.images.split(':')[0];
 
 				return {
@@ -207,13 +211,20 @@ namespace QnAService {
 	) => {
 		let transaction = mysqlConn.transaction();
 
-		transaction = transaction.query(
-			`
+		transaction = transaction
+			.query(
+				`
 			INSERT INTO answer (questionid, userid, content, refpartner)
 				VALUES (?, ?, ?, ?);
 			`,
-			[questionID, userID, content, refPartnerID],
-		);
+				[questionID, userID, content, refPartnerID],
+			)
+			.query(
+				`
+			UPDATE question SET answers=answers+1 WHERE id=?; 
+			`,
+				[questionID],
+			);
 
 		const [result1] = await transaction.commit();
 		mysqlConn.end();
@@ -224,12 +235,19 @@ namespace QnAService {
 	export const deleteAnswer = async (questionID: string, answerID: string) => {
 		let transaction = mysqlConn.transaction();
 
-		transaction = transaction.query(
-			`
+		transaction = transaction
+			.query(
+				`
 			DELETE FROM answer WHERE id=? AND questionid=?;
 			`,
-			[answerID, questionID],
-		);
+				[answerID, questionID],
+			)
+			.query(
+				`
+			UPDATE question SET answers=answers-1 WHERE id=?; 
+			`,
+				[questionID],
+			);
 
 		await transaction.commit();
 		mysqlConn.end();

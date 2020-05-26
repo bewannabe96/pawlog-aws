@@ -31,8 +31,8 @@ export const listQuestions: APIGatewayProxyHandler = async (event) => {
 // createQuestion
 export const createQuestion: APIGatewayProxyHandler = async (event) => {
 	const data = JSON.parse(event.body) as {
-		usesrID: string;
-		category: { code?: string; free?: string };
+		userID: string;
+		category: { code: string; free?: string };
 		pettype?: string;
 		title: string;
 		content: string;
@@ -40,7 +40,7 @@ export const createQuestion: APIGatewayProxyHandler = async (event) => {
 
 	try {
 		const result = await QnAService.createQuestion(
-			data.usesrID,
+			data.userID,
 			data.category.code,
 			data.category.free,
 			data.pettype,
