@@ -28,8 +28,8 @@ namespace ConfigService {
 		return result;
 	};
 
-	export const getQuestionCategories = async () => {
-		const query = 'SELECT code, name FROM qstncategory;';
+	export const getQuestionKewords = async () => {
+		const query = 'SELECT code, name FROM qstnkeyword;';
 
 		const result = await mysqlConn.query(query);
 		mysqlConn.end();

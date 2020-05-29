@@ -131,7 +131,7 @@ namespace PartnerService {
 					review: {
 						averageRate:
 							(row.rate * row.reviews + row.googlerate * row.googlereviews) /
-							(row.reviews + row.googlereviews),
+								(row.reviews + row.googlereviews) || 0,
 						count: row.reviews + row.googlereviews,
 					},
 				};
@@ -173,7 +173,7 @@ namespace PartnerService {
 				averageRate:
 					(result1[0].rate * result1[0].reviews +
 						result1[0].googlerate * result1[0].googlereviews) /
-					(result1[0].reviews + result1[0].googlereviews),
+						(result1[0].reviews + result1[0].googlereviews) || 0,
 				count: result1[0].reviews + result1[0].googlereviews,
 			},
 			detail: {

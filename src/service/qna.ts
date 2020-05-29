@@ -3,21 +3,29 @@ import mysqlConn from '../util/mysql';
 namespace QnAService {
 	export const createQuestion = async (
 		userID: string,
-		category: string,
-		freeCategory: string | null,
 		pettype: string | null,
 		title: string,
 		content: string,
+		keywords: string[],
 	) => {
 		let transaction = mysqlConn.transaction();
 
-		transaction = transaction.query(
-			`
-			INSERT INTO question (userid, category, etccategory, pettype, title, content)
-				VALUES (?, ?, ?, ?, ?, ?);
+		transaction = transaction
+			.query(
+				`
+			INSERT INTO question (userid, pettype, title, content)
+				VALUES (?, ?, ?, ?);
 			`,
-			[userID, category, freeCategory, pettype, title, content],
-		);
+				[userID, pettype, title, content],
+			)
+			.query('SELECT LAST_INSERT_ID() INTO @insertid;', []);
+
+		keywords.forEach((keyword) => {
+			transaction = transaction.query(
+				'INSERT INTO qstnkwrelation (questionid, keyword) VALUES (@insertid, ?);',
+				[keyword],
+			);
+		});
 
 		const [result1] = await transaction.commit();
 		mysqlConn.end();
@@ -28,46 +36,84 @@ namespace QnAService {
 	export const getQuestions = async (
 		limit: number,
 		offset: number,
-		filter: { query?: string; category?: string; pettype?: string },
+		filter: { query?: string; keywords?: string[]; pettype?: string },
 	) => {
-		let filterClause = '';
-		const filterValues = [];
-
-		if (filter.query) {
-			filterClause +=
-				'AND MATCH(title, content) AGAINST (? IN NATURAL LANGUAGE MODE)';
-			filterValues.push(filter.query);
-		}
-		if (filter.category) {
-			filterClause += 'AND category=?';
-			filterValues.push(filter.category);
-		}
-		if (filter.pettype) {
-			filterClause += 'AND pettype=?';
-			filterValues.push(filter.pettype);
-		}
-
 		let transaction = mysqlConn.transaction();
 
 		transaction
 			.query(
 				`
-				SELECT count(*) AS total
-				FROM question AS Q
-				JOIN user AS U ON Q.userid = U.id
-				WHERE TRUE ${filterClause};
+				SELECT COUNT(Q.id) AS total
+				FROM question Q
+					${
+						filter.keywords
+							? `
+						JOIN (
+							SELECT Q.id
+							FROM question Q
+								JOIN qstnkwrelation KR ON Q.id = KR.questionid
+							WHERE KR.keyword IN (?)
+							GROUP BY Q.id
+						) S ON S.id = Q.id
+						`
+							: ''
+					}
+				WHERE TRUE
+				${
+					filter.query
+						? 'AND MATCH(title, content) AGAINST (? IN NATURAL LANGUAGE MODE)'
+						: ''
+				}
+				${filter.pettype ? 'AND pettype=?' : ''}
+				;
 				`,
-				[...filterValues],
+				[
+					...(filter.keywords ? [filter.keywords] : []),
+					...(filter.query ? [filter.query] : []),
+					...(filter.pettype ? [filter.pettype] : []),
+				],
 			)
 			.query(
 				`
-				SELECT Q.id, Q.category, Q.pettype, Q.title, Q.answers, U.id AS userid, U.email, U.name, U.picture
-				FROM question AS Q
-				JOIN user AS U ON Q.userid = U.id
-				WHERE TRUE ${filterClause}
+				SELECT Q.id, Q.pettype, Q.title, Q.answers, U.id AS userid, U.email, U.name, U.picture, K.keywords
+				FROM question Q
+					JOIN user U ON Q.userid = U.id
+					${
+						filter.keywords
+							? `
+						JOIN (
+							SELECT Q.id, COUNT(KR.keyword) AS score
+							FROM question Q
+								JOIN qstnkwrelation KR ON Q.id = KR.questionid
+							WHERE KR.keyword IN (?)
+							GROUP BY Q.id
+						) S ON S.id = Q.id
+						`
+							: ''
+					}
+					JOIN (
+						SELECT Q.id, GROUP_CONCAT(KR.keyword) AS keywords
+						FROM question Q
+							JOIN qstnkwrelation KR ON Q.id = KR.questionid
+						GROUP BY Q.id
+					) K ON K.id = Q.id
+				WHERE TRUE
+				${
+					filter.query
+						? 'AND MATCH(title, content) AGAINST (? IN NATURAL LANGUAGE MODE)'
+						: ''
+				}
+				${filter.pettype ? 'AND pettype=?' : ''}
+				${filter.keywords ? 'ORDER BY S.score DESC' : ''}
 				LIMIT ?, ?;
 				`,
-				[...filterValues, offset * limit, limit],
+				[
+					...(filter.keywords ? [filter.keywords] : []),
+					...(filter.query ? [filter.query] : []),
+					...(filter.pettype ? [filter.pettype] : []),
+					offset * limit,
+					limit,
+				],
 			);
 
 		const [result1, result2] = await transaction.commit();
@@ -83,13 +129,10 @@ namespace QnAService {
 					email: row.email,
 					picture: row.picture,
 				},
-				category: {
-					code: row.category,
-					free: row.etccategory,
-				},
 				pettype: row.pettype,
 				title: row.title,
 				answers: row.answers,
+				keywords: row.keywords.split(','),
 			})),
 		};
 	};
@@ -97,18 +140,25 @@ namespace QnAService {
 	export const getQuestionDetail = async (questionID: string) => {
 		let transaction = mysqlConn.transaction();
 
-		transaction = transaction.query(
-			`
-				SELECT Q.id, Q.category, Q.etccategory, Q.pettype, Q.title, Q.content, Q.answers, Q.created, Q.updated,
+		transaction = transaction
+			.query(
+				`
+				SELECT Q.id, Q.pettype, Q.title, Q.content, Q.answers, Q.created, Q.updated,
 					U.id AS userid, U.email, U.name, U.picture
-				FROM question AS Q
-				JOIN user AS U ON Q.userid = U.id
+				FROM question Q
+					JOIN user U ON Q.userid = U.id
 				WHERE Q.id=?;
 				`,
-			[questionID],
-		);
+				[questionID],
+			)
+			.query(
+				`
+				SELECT keyword FROM qstnkwrelation WHERE questionid=?;
+			`,
+				[questionID],
+			);
 
-		const [result1] = await transaction.commit();
+		const [result1, result2] = await transaction.commit();
 		mysqlConn.end();
 
 		return {
@@ -119,14 +169,11 @@ namespace QnAService {
 				email: result1[0].email,
 				picture: result1[0].picture,
 			},
-			category: {
-				code: result1[0].category,
-				free: result1[0].etccategory,
-			},
 			pettype: result1[0].pettype,
 			title: result1[0].title,
 			content: result1[0].content,
 			answers: result1[0].answers,
+			keywords: result2.map((row: any) => row.keyword),
 			created: result1[0].created,
 			updated: result1[0].updated,
 		};
@@ -137,6 +184,7 @@ namespace QnAService {
 
 		transaction = transaction
 			.query('DELETE FROM answer WHERE questionid=?;', [questionID])
+			.query('DELETE FROM qstnkwrelation WHERE questionid=?;', [questionID])
 			.query('DELETE FROM question WHERE id=?;', [questionID]);
 
 		await transaction.commit();
@@ -193,7 +241,7 @@ namespace QnAService {
 						review: {
 							averageRate:
 								(row.rate * row.reviews + row.googlerate * row.googlereviews) /
-								(row.reviews + row.googlereviews),
+									(row.reviews + row.googlereviews) || 0,
 							count: row.reviews + row.googlereviews,
 						},
 					},

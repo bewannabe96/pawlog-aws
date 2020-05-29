@@ -37,10 +37,10 @@ export const listPetTypes: APIGatewayProxyHandler = async () => {
 	}
 };
 
-// listQuestionCategory
-export const listQuestionCategory: APIGatewayProxyHandler = async () => {
+// listQuestionKeywords
+export const listQuestionKeywords: APIGatewayProxyHandler = async () => {
 	try {
-		const result = await ConfigService.getQuestionCategories();
+		const result = await ConfigService.getQuestionKewords();
 		return createResponse(200, result);
 	} catch (error) {
 		console.log(error);
