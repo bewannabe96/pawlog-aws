@@ -12,14 +12,14 @@ export const listQuestions: APIGatewayProxyHandler = async (event) => {
 	const offset = event.queryStringParameters.offset ?? '0';
 
 	const query = event.queryStringParameters.q;
-	const category = event.queryStringParameters.category;
+	const keywords = event.queryStringParameters.keywords.split(',');
 	const pettype = event.queryStringParameters.pettype;
 
 	try {
 		const result = await QnAService.getQuestions(
 			parseInt(limit),
 			parseInt(offset),
-			{ query, category, pettype },
+			{ query, keywords, pettype },
 		);
 		return createResponse(200, result);
 	} catch (error) {
@@ -32,20 +32,19 @@ export const listQuestions: APIGatewayProxyHandler = async (event) => {
 export const createQuestion: APIGatewayProxyHandler = async (event) => {
 	const data = JSON.parse(event.body) as {
 		userID: string;
-		category: { code: string; free?: string };
 		pettype?: string;
 		title: string;
 		content: string;
+		keywords: string[];
 	};
 
 	try {
 		const result = await QnAService.createQuestion(
 			data.userID,
-			data.category.code,
-			data.category.free,
 			data.pettype,
 			data.title,
 			data.content,
+			data.keywords,
 		);
 		return createResponse(200, result);
 	} catch (error) {

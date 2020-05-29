@@ -2,7 +2,7 @@ listAreaCodes:
   handler: src/api/configs.listAreaCodes
   events:
     - http:
-        path: configs/area
+        path: configs/areas
         method: get
         cors: true
 
@@ -10,7 +10,7 @@ listPartnerTypes:
   handler: src/api/configs.listPartnerTypes
   events:
     - http:
-        path: configs/partnerType
+        path: configs/partnerTypes
         method: get
         cors: true
 
@@ -18,14 +18,14 @@ listPetTypes:
   handler: src/api/configs.listPetTypes
   events:
     - http:
-        path: configs/petType
+        path: configs/petTypes
         method: get
         cors: true
 
-listQuestionCategory:
-  handler: src/api/configs.listQuestionCategory
+listQuestionKeywords:
+  handler: src/api/configs.listQuestionKeywords
   events:
     - http:
-        path: configs/questionCategory
+        path: configs/questionKeywords
         method: get
         cors: true
