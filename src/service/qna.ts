@@ -3,7 +3,6 @@ import mysqlConn from '../util/mysql';
 namespace QnAService {
 	export const createQuestion = async (
 		userID: string,
-		pettype: string | null,
 		title: string,
 		content: string,
 		keywords: string[],
@@ -13,10 +12,10 @@ namespace QnAService {
 		transaction = transaction
 			.query(
 				`
-			INSERT INTO question (userid, pettype, title, content)
-				VALUES (?, ?, ?, ?);
+			INSERT INTO question (userid, title, content)
+				VALUES (?, ?, ?);
 			`,
-				[userID, pettype, title, content],
+				[userID, title, content],
 			)
 			.query('SELECT LAST_INSERT_ID() INTO @insertid;', []);
 
@@ -64,18 +63,16 @@ namespace QnAService {
 						? 'AND MATCH(title, content) AGAINST (? IN NATURAL LANGUAGE MODE)'
 						: ''
 				}
-				${filter.pettype ? 'AND pettype=?' : ''}
 				;
 				`,
 				[
 					...(filter.keywords ? [filter.keywords] : []),
 					...(filter.query ? [filter.query] : []),
-					...(filter.pettype ? [filter.pettype] : []),
 				],
 			)
 			.query(
 				`
-				SELECT Q.id, Q.pettype, Q.title, Q.answers, U.id AS userid, U.email, U.name, U.picture, K.keywords
+				SELECT Q.id, Q.title, Q.answers, U.id AS userid, U.email, U.name, U.picture, K.keywords
 				FROM question Q
 					JOIN user U ON Q.userid = U.id
 					${
@@ -103,14 +100,12 @@ namespace QnAService {
 						? 'AND MATCH(title, content) AGAINST (? IN NATURAL LANGUAGE MODE)'
 						: ''
 				}
-				${filter.pettype ? 'AND pettype=?' : ''}
 				${filter.keywords ? 'ORDER BY S.score DESC' : ''}
 				LIMIT ?, ?;
 				`,
 				[
 					...(filter.keywords ? [filter.keywords] : []),
 					...(filter.query ? [filter.query] : []),
-					...(filter.pettype ? [filter.pettype] : []),
 					offset * limit,
 					limit,
 				],
@@ -129,7 +124,6 @@ namespace QnAService {
 					email: row.email,
 					picture: row.picture,
 				},
-				pettype: row.pettype,
 				title: row.title,
 				answers: row.answers,
 				keywords: row.keywords.split(','),
@@ -143,7 +137,7 @@ namespace QnAService {
 		transaction = transaction
 			.query(
 				`
-				SELECT Q.id, Q.pettype, Q.title, Q.content, Q.answers, Q.created, Q.updated,
+				SELECT Q.id, Q.title, Q.content, Q.answers, Q.created, Q.updated,
 					U.id AS userid, U.email, U.name, U.picture
 				FROM question Q
 					JOIN user U ON Q.userid = U.id
@@ -169,7 +163,6 @@ namespace QnAService {
 				email: result1[0].email,
 				picture: result1[0].picture,
 			},
-			pettype: result1[0].pettype,
 			title: result1[0].title,
 			content: result1[0].content,
 			answers: result1[0].answers,
