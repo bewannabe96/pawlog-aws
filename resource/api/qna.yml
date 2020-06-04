@@ -6,6 +6,14 @@ listQuestions:
         method: get
         cors: true
 
+listWaitingQuestions:
+  handler: src/api/qnas.listWaitingQuestions
+  events:
+    - http:
+        path: qnas/waitings
+        method: get
+        cors: true
+
 createQuestion:
   handler: src/api/qnas.createQuestion
   events:

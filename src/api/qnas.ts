@@ -27,6 +27,25 @@ export const listQuestions: APIGatewayProxyHandler = async (event) => {
 	}
 };
 
+// listWaitingQuestions
+export const listWaitingQuestions: APIGatewayProxyHandler = async (event) => {
+	event.queryStringParameters = event.queryStringParameters || {};
+
+	const limit = event.queryStringParameters.limit ?? '10';
+	const offset = event.queryStringParameters.offset ?? '0';
+
+	try {
+		const result = await QnAService.getWaitingQuestions(
+			parseInt(limit),
+			parseInt(offset),
+		);
+		return createResponse(200, result);
+	} catch (error) {
+		console.log(error);
+		return createResponse(500, error);
+	}
+};
+
 // createQuestion
 export const createQuestion: APIGatewayProxyHandler = async (event) => {
 	const data = JSON.parse(event.body) as {

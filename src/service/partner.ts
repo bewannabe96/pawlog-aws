@@ -396,7 +396,15 @@ namespace PartnerService {
 				reviewID,
 			])
 			.query(
-				'UPDATE partner SET rate=((rate*reviews)-@rate)/(reviews-1), reviews=reviews-1 WHERE id=?;',
+				`
+				UPDATE partner SET
+					rate = (
+						CASE WHEN reviews-1 = 0 THEN 0
+						ELSE (rate*reviews-@rate)/(reviews-1) END
+					),
+					reviews = reviews - 1
+				WHERE id=?;
+				`,
 				[partnerID],
 			);
 

@@ -35,7 +35,7 @@ namespace QnAService {
 	export const getQuestions = async (
 		limit: number,
 		offset: number,
-		filter: { query?: string; keywords?: string[]; pettype?: string },
+		filter: { query?: string; keywords?: string[] },
 	) => {
 		let transaction = mysqlConn.transaction();
 
@@ -109,6 +109,55 @@ namespace QnAService {
 					offset * limit,
 					limit,
 				],
+			);
+
+		const [result1, result2] = await transaction.commit();
+		mysqlConn.end();
+
+		return {
+			total: result1[0].total,
+			qnas: result2.map((row: any) => ({
+				id: row.id.toString(),
+				user: {
+					id: row.userid,
+					name: row.name,
+					email: row.email,
+					picture: row.picture,
+				},
+				title: row.title,
+				answers: row.answers,
+				keywords: row.keywords.split(','),
+			})),
+		};
+	};
+
+	export const getWaitingQuestions = async (limit: number, offset: number) => {
+		let transaction = mysqlConn.transaction();
+
+		transaction = transaction
+			.query(
+				`
+				SELECT COUNT(Q.id) AS total
+				FROM question Q
+				WHERE answers = 0;
+				`,
+			)
+			.query(
+				`
+				SELECT Q.id, Q.title, Q.answers, U.id AS userid, U.email, U.name, U.picture, K.keywords
+				FROM question Q
+					JOIN user U ON Q.userid = U.id
+					JOIN (
+						SELECT Q.id, GROUP_CONCAT(KR.keyword) AS keywords
+						FROM question Q
+							JOIN qstnkwrelation KR ON Q.id = KR.questionid
+						GROUP BY Q.id
+					) K ON K.id = Q.id
+				WHERE Q.answers = 0
+				ORDER BY Q.created DESC
+				LIMIT ?, ?;
+				`,
+				[offset * limit, limit],
 			);
 
 		const [result1, result2] = await transaction.commit();
