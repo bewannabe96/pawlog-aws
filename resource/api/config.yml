@@ -14,14 +14,6 @@ listPartnerTypes:
         method: get
         cors: true
 
-listPetTypes:
-  handler: src/api/configs.listPetTypes
-  events:
-    - http:
-        path: configs/petTypes
-        method: get
-        cors: true
-
 listQuestionKeywords:
   handler: src/api/configs.listQuestionKeywords
   events:

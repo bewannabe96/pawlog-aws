@@ -26,17 +26,6 @@ export const listPartnerTypes: APIGatewayProxyHandler = async () => {
 	}
 };
 
-// listPetTypes
-export const listPetTypes: APIGatewayProxyHandler = async () => {
-	try {
-		const result = await ConfigService.getPetTypes();
-		return createResponse(200, result);
-	} catch (error) {
-		console.log(error);
-		return createResponse(500, error);
-	}
-};
-
 // listQuestionKeywords
 export const listQuestionKeywords: APIGatewayProxyHandler = async () => {
 	try {

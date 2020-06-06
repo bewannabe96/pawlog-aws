@@ -2,39 +2,41 @@ import mysqlConn from '../util/mysql';
 
 namespace ConfigService {
 	export const getAreas = async () => {
-		const query = 'SELECT code, name FROM area;';
+		let transaction = mysqlConn.transaction();
 
-		const result = await mysqlConn.query(query);
+		transaction = transaction.query('SELECT code, name FROM area;');
+
+		const [result] = await transaction.commit();
 		mysqlConn.end();
 
 		return result;
 	};
 
 	export const getPartnerTypes = async () => {
-		const query = 'SELECT code, name FROM partnertype;';
+		let transaction = mysqlConn.transaction();
 
-		const result = await mysqlConn.query(query);
-		mysqlConn.end();
+		transaction = transaction.query('SELECT code, name FROM partnertype;');
 
-		return result;
-	};
-
-	export const getPetTypes = async () => {
-		const query = 'SELECT code, name FROM pettype;';
-
-		const result = await mysqlConn.query(query);
+		const [result] = await transaction.commit();
 		mysqlConn.end();
 
 		return result;
 	};
 
 	export const getQuestionKewords = async () => {
-		const query = 'SELECT code, name FROM qstnkeyword;';
+		let transaction = mysqlConn.transaction();
 
-		const result = await mysqlConn.query(query);
+		transaction = transaction.query(
+			'SELECT K.code, G.name groupname, K.name FROM qstnkeyword K JOIN qstnkwgroup G ON G.code = K.group;',
+		);
+
+		const [result] = await transaction.commit();
 		mysqlConn.end();
 
-		return result;
+		return result.map((row: any) => ({
+			...row,
+			group: row.groupname,
+		}));
 	};
 }
 

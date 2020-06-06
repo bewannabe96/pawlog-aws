@@ -12,7 +12,7 @@ export const listQuestions: APIGatewayProxyHandler = async (event) => {
 	const offset = event.queryStringParameters.offset ?? '0';
 
 	const query = event.queryStringParameters.q;
-	const keywords = event.queryStringParameters.keywords.split(',');
+	const keywords = event.queryStringParameters.keywords?.split(',');
 
 	try {
 		const result = await QnAService.getQuestions(

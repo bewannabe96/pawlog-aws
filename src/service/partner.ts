@@ -54,17 +54,17 @@ namespace PartnerService {
 		transaction = filter.type
 			? transaction
 					.query(
-						`SELECT count(*) AS total
-							FROM partner AS P
-							JOIN ptnrtyperelation AS R ON P.id = R.partnerid AND R.partnertypecode=? 
+						`SELECT count(*) total
+							FROM partner P
+							JOIN ptnrtyperelation R ON P.id = R.partnerid AND R.partnertypecode=? 
 							WHERE TRUE ${filterClause};`,
 						[filter.type, ...filterValues],
 					)
 					.query(
-						`SELECT P.id, P.images, P.name, P.areacode, rate, reviews, googlerate, googlereviews, GROUP_CONCAT(R2.partnertypecode) AS types
-							FROM partner AS P
-							JOIN ptnrtyperelation AS R ON P.id = R.partnerid AND R.partnertypecode=?
-							JOIN ptnrtyperelation AS R2 ON P.id = R2.partnerid
+						`SELECT P.id, P.images, P.name, P.areacode, rate, reviews, googlerate, googlereviews, GROUP_CONCAT(R2.partnertypecode) types
+							FROM partner P
+							JOIN ptnrtyperelation R ON P.id = R.partnerid AND R.partnertypecode=?
+							JOIN ptnrtyperelation R2 ON P.id = R2.partnerid
 							WHERE TRUE ${filterClause}
 							GROUP BY P.id
 							${
@@ -83,15 +83,15 @@ namespace PartnerService {
 					)
 			: transaction
 					.query(
-						`SELECT count(*) AS total
+						`SELECT count(*) total
 							FROM partner
 							WHERE TRUE ${filterClause};`,
 						[...filterValues],
 					)
 					.query(
-						`SELECT P.id, P.images, P.name, P.areacode, rate, reviews, googlerate, googlereviews, GROUP_CONCAT(R.partnertypecode) AS types
-							FROM partner AS P
-							JOIN ptnrtyperelation AS R ON P.id=R.partnerid
+						`SELECT P.id, P.images, P.name, P.areacode, rate, reviews, googlerate, googlereviews, GROUP_CONCAT(R.partnertypecode) types
+							FROM partner P
+							JOIN ptnrtyperelation R ON P.id=R.partnerid
 							WHERE TRUE ${filterClause}
 							GROUP BY P.id
 							${
@@ -320,12 +320,12 @@ namespace PartnerService {
 		let transaction = mysqlConn.transaction();
 
 		transaction = transaction
-			.query('SELECT count(id) AS total FROM review;')
+			.query('SELECT count(id) total FROM review;')
 			.query(
 				`
-				SELECT U.id AS userid, U.email, U.name, U.picture, R.id AS reviewid, R.rate, R.content, R.created
-				FROM review AS R
-				JOIN user AS U
+				SELECT U.id userid, U.email, U.name, U.picture, R.id reviewid, R.rate, R.content, R.created
+				FROM review R
+				JOIN user U
 				WHERE U.id=R.userid && partnerid=?
 				ORDER BY created DESC
 				LIMIT ?, ?;
@@ -418,7 +418,7 @@ namespace PartnerService {
 		let transaction = mysqlConn.transaction();
 
 		transaction = transaction
-			.query('SELECT count(id) AS total FROM googlereview;')
+			.query('SELECT count(id) total FROM googlereview;')
 			.query(
 				'SELECT id, name, photo, rate, content, created FROM googlereview WHERE partnerid=? ORDER BY created DESC;',
 				[partnerID],
