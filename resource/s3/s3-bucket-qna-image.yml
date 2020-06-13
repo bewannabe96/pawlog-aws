@@ -1,0 +1,8 @@
+Resources:
+  S3BucketQnAImage:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: pawlog-qna-image
+      Tags:
+        - Key: Name
+          Value: S3BucketQnAImage

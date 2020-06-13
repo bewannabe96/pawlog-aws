@@ -5,6 +5,7 @@ namespace QnAService {
 		userID: string,
 		title: string,
 		content: string,
+		images: string[],
 		keywords: string[],
 	) => {
 		let transaction = mysqlConn.transaction();
@@ -12,10 +13,10 @@ namespace QnAService {
 		transaction = transaction
 			.query(
 				`
-			INSERT INTO question (userid, title, content)
-				VALUES (?, ?, ?);
+			INSERT INTO question (userid, title, content, images)
+				VALUES (?, ?, ?, ?);
 			`,
-				[userID, title, content],
+				[userID, title, content, images.join(':')],
 			)
 			.query('SELECT LAST_INSERT_ID() INTO @insertid;', []);
 
@@ -186,7 +187,7 @@ namespace QnAService {
 		transaction = transaction
 			.query(
 				`
-				SELECT Q.id, Q.title, Q.content, Q.answers, Q.created, Q.updated,
+				SELECT Q.id, Q.title, Q.content, Q.images, Q.answers, Q.created, Q.updated,
 					U.id userid, U.email, U.name, U.picture
 				FROM question Q
 					JOIN user U ON Q.userid = U.id
@@ -204,6 +205,8 @@ namespace QnAService {
 		const [result1, result2] = await transaction.commit();
 		mysqlConn.end();
 
+		const uids = result1[0].images === '' ? [] : result1[0].images.split(':');
+
 		return {
 			id: questionID,
 			user: {
@@ -214,6 +217,10 @@ namespace QnAService {
 			},
 			title: result1[0].title,
 			content: result1[0].content,
+			images: uids.map((uid: any) => ({
+				uid: uid,
+				url: `https://${process.env.QNA_IMAGE_BUCKET_DOMAIN}/${questionID}/${uid}`,
+			})),
 			answers: result1[0].answers,
 			keywords: result2.map((row: any) => row.keyword),
 			created: result1[0].created,

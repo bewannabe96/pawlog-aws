@@ -3,6 +3,7 @@ import { APIGatewayProxyHandler } from 'aws-lambda';
 import { createResponse } from '../util/response';
 
 import QnAService from '../service/qna';
+import QnAImageService from '../service/qna-image';
 
 // listQuestions
 export const listQuestions: APIGatewayProxyHandler = async (event) => {
@@ -52,6 +53,7 @@ export const createQuestion: APIGatewayProxyHandler = async (event) => {
 		userID: string;
 		title: string;
 		content: string;
+		images: string[];
 		keywords: string[];
 	};
 
@@ -60,6 +62,7 @@ export const createQuestion: APIGatewayProxyHandler = async (event) => {
 			data.userID,
 			data.title,
 			data.content,
+			data.images,
 			data.keywords,
 		);
 		return createResponse(200, result);
@@ -89,6 +92,20 @@ export const deleteQuestion: APIGatewayProxyHandler = async (event) => {
 	try {
 		const result = await QnAService.deleteQuestion(questionID);
 		return createResponse(200, result);
+	} catch (error) {
+		console.log(error);
+		return createResponse(500, error);
+	}
+};
+
+// uploadQuestionImage
+export const uploadQuestionImage: APIGatewayProxyHandler = async (event) => {
+	const questionID = event.pathParameters.questionID;
+	const data = Buffer.from(event.body, 'base64');
+
+	try {
+		const uid = await QnAImageService.uploadQnAImage(questionID, data);
+		return createResponse(200, { uid: uid });
 	} catch (error) {
 		console.log(error);
 		return createResponse(500, error);

@@ -48,6 +48,19 @@ deleteQuestion:
             paths:
               questionID: true
 
+uploadQuestionImage:
+  handler: src/api/qnas.uploadQuestionImage
+  events:
+    - http:
+        path: qna/{questionID}/images
+        method: post
+        authorizer: customAuthorizer
+        cors: true
+        request:
+          parameters:
+            paths:
+              questionID: true
+
 listAnswers:
   handler: src/api/qnas.listAnswers
   events:
