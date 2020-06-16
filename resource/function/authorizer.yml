@@ -1,0 +1,4 @@
+customAuthorizer:
+  handler: src/authorizer.handler
+  environment:
+    COGNITO_PROVIDER_URL: !ImportValue PawlogUserPoolProviderURL

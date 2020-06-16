@@ -3,7 +3,15 @@ service:
   app: pawlog-aws
   org: rnjssh96
 
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-apigw-binary
+  - serverless-plugin-additional-stacks
+
 custom:
+  serverless-offline:
+    httpPort: 4000
   webpack:
     webpackConfig: ./webpack.config.js
     includeModules:
@@ -16,13 +24,10 @@ custom:
   apigwBinary:
     types:
       - image/*
-  serverless-offline:
-    httpPort: 4000
-
-plugins:
-  - serverless-webpack
-  - serverless-offline
-  - serverless-apigw-binary
+  additionalStacks:
+    vpc: ${file(./stack/vpc.yml):vpc}
+    storage: ${file(./stack/storage.yml):storage}
+    cognito: ${file(./stack/cognito.yml):cognito}
 
 provider:
   name: aws
@@ -33,59 +38,42 @@ provider:
     minimumCompressionSize: 1024
   vpc:
     securityGroupIds:
-      - Ref: PawlogSecurityGroup
+      - !ImportValue SecurityGroupName
     subnetIds:
-      - Ref: PrivateSubnetA
-      - Ref: PrivateSubnetB
-      - Ref: PrivateSubnetC
+      - !ImportValue PrivateSubnetAName
+      - !ImportValue PrivateSubnetBName
+      - !ImportValue PrivateSubnetCName
   iamRoleStatements:
     - Effect: Allow
       Action:
         - s3:*
       Resource:
-        - !GetAtt S3BucketPartnerImage.Arn
+        - !ImportValue PartnerImageBucketArn
         - !Join
           - ''
-          - - !GetAtt S3BucketPartnerImage.Arn
+          - - !ImportValue PartnerImageBucketArn
+            - '/*'
+        - !ImportValue QnAImageBucketArn
+        - !Join
+          - ''
+          - - !ImportValue QnAImageBucketArn
             - '/*'
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
-    # DB_HOST: 127.0.0.1
-    DB_HOST: !GetAtt PawlogRDS.Endpoint.Address
+    DB_HOST: !ImportValue PawlogRDSEndpoint
     DB_NAME: pawlog
     DB_USER: api
     DB_PSWD: aNDXJs3WGqUgXcJAXFcGG7xuB35eVV
-    PARTNER_IMAGE_BUCKET: !Ref S3BucketPartnerImage
-    PARTNER_IMAGE_BUCKET_DOMAIN: !GetAtt S3BucketPartnerImage.RegionalDomainName
-    QNA_IMAGE_BUCKET: !Ref S3BucketQnAImage
-    QNA_IMAGE_BUCKET_DOMAIN: !GetAtt S3BucketQnAImage.RegionalDomainName
-
+    PARTNER_IMAGE_BUCKET: !ImportValue PartnerImageBucketName
+    PARTNER_IMAGE_BUCKET_DOMAIN: !ImportValue PartnerImageBucketDomain
+    QNA_IMAGE_BUCKET: !ImportValue QnAImageBucketName
+    QNA_IMAGE_BUCKET_DOMAIN: !ImportValue QnAImageBucketDomain
 functions:
-  - customAuthorizer:
-      handler: src/authorizer.handler
-      environment:
-        COGNITO_PROVIDER_URL: !GetAtt CognitoUserPoolPawlog.ProviderURL
+  - ${file(./resource/function/authorizer.yml)}
 
-  - ${file(./resource/trigger/cognito.yml)}
+  - ${file(./resource/function/trigger/cognito.yml)}
 
-  - ${file(./resource/api/config.yml)}
-  - ${file(./resource/api/user.yml)}
-  - ${file(./resource/api/partner.yml)}
-  - ${file(./resource/api/qna.yml)}
-
-resources:
-  - ${file(./resource/vpc/vpc.yml)}
-  - ${file(./resource/vpc/security-group.yml)}
-  - ${file(./resource/vpc/subnet.yml)}
-  - ${file(./resource/vpc/route-table.yml)}
-
-  - ${file(./resource/vpc/internet-gateway.yml)}
-  - ${file(./resource/vpc/nat-gateway.yml)}
-
-  - ${file(./resource/cognito/userpool.yml)}
-  - ${file(./resource/cognito/identitypool.yml)}
-
-  - ${file(./resource/rds.yml)}
-
-  - ${file(./resource/s3/s3-bucket-partner-image.yml)}
-  - ${file(./resource/s3/s3-bucket-qna-image.yml)}
+  - ${file(./resource/function/api/config.yml)}
+  - ${file(./resource/function/api/user.yml)}
+  - ${file(./resource/function/api/partner.yml)}
+  - ${file(./resource/function/api/qna.yml)}

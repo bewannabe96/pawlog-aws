@@ -2,5 +2,6 @@ onConfirmation:
   handler: src/trigger/cognito.onConfirmation
   events:
     - cognitoUserPool:
-        pool: Pawlog
+        pool: PawlogUserPool
         trigger: PostConfirmation
+        existing: true

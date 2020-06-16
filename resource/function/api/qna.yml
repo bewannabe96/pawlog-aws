@@ -52,7 +52,7 @@ uploadQuestionImage:
   handler: src/api/qnas.uploadQuestionImage
   events:
     - http:
-        path: qna/{questionID}/images
+        path: qnas/{questionID}/images/{uid}
         method: post
         authorizer: customAuthorizer
         cors: true
@@ -60,6 +60,7 @@ uploadQuestionImage:
           parameters:
             paths:
               questionID: true
+              uid: true
 
 listAnswers:
   handler: src/api/qnas.listAnswers

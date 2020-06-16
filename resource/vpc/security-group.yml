@@ -23,3 +23,9 @@ Resources:
       SourceSecurityGroupId:
         Ref: PawlogSecurityGroup
       IpProtocol: -1
+
+Outputs:
+  SecurityGroupName:
+    Value: !Ref PawlogSecurityGroup
+    Export:
+      Name: SecurityGroupName

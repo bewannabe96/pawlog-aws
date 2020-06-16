@@ -101,10 +101,11 @@ export const deleteQuestion: APIGatewayProxyHandler = async (event) => {
 // uploadQuestionImage
 export const uploadQuestionImage: APIGatewayProxyHandler = async (event) => {
 	const questionID = event.pathParameters.questionID;
+	const uid = event.pathParameters.uid;
 	const data = Buffer.from(event.body, 'base64');
 
 	try {
-		const uid = await QnAImageService.uploadQnAImage(questionID, data);
+		await QnAImageService.uploadQnAImage(questionID, uid, data);
 		return createResponse(200, { uid: uid });
 	} catch (error) {
 		console.log(error);

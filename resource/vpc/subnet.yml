@@ -58,3 +58,17 @@ Resources:
       Tags:
         - Key: Name
           Value: PrivateSubnetGroup
+
+Outputs:
+  PrivateSubnetAName:
+    Value: !Ref PrivateSubnetA
+    Export:
+      Name: PrivateSubnetAName
+  PrivateSubnetBName:
+    Value: !Ref PrivateSubnetB
+    Export:
+      Name: PrivateSubnetBName
+  PrivateSubnetCName:
+    Value: !Ref PrivateSubnetC
+    Export:
+      Name: PrivateSubnetCName

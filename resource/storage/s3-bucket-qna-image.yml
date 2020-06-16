@@ -1,0 +1,22 @@
+Resources:
+  S3BucketQnAImage:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: pawlog-qna-image
+      Tags:
+        - Key: Name
+          Value: S3BucketQnAImage
+
+Outputs:
+  QnAImageBucketName:
+    Value: !Ref S3BucketQnAImage
+    Export:
+      Name: QnAImageBucketName
+  QnAImageBucketArn:
+    Value: !GetAtt S3BucketQnAImage.Arn
+    Export:
+      Name: QnAImageBucketArn
+  QnAImageBucketDomain:
+    Value: !GetAtt S3BucketQnAImage.RegionalDomainName
+    Export:
+      Name: QnAImageBucketDomain

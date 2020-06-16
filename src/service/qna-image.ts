@@ -1,15 +1,13 @@
 import sharp from 'sharp';
-import { v4 as uuidv4 } from 'uuid';
 
 import s3Bucket from '../util/s3-bucket';
 
 namespace QnAImageService {
 	export const uploadQnAImage = async (
 		questionID: string,
+		uid: string,
 		data: Buffer,
-	): Promise<string> => {
-		const uid = uuidv4();
-
+	) => {
 		const buffer = await new Promise((resolve, reject) =>
 			sharp(data)
 				.resize({ width: 1024, height: 768, fit: sharp.fit.cover })
@@ -35,8 +33,6 @@ namespace QnAImageService {
 				},
 			),
 		);
-
-		return uid;
 	};
 
 	export const deleteQnAImages = async (questionID: string) => {

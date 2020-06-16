@@ -8,7 +8,6 @@ export const createResponse = <ResponseBody>(
 		statusCode: statusCode,
 		headers: {
 			'Access-Control-Allow-Origin': 'pawloghk.com',
-			// 'Access-Control-Allow-Credentials': true,
 		},
 		body: JSON.stringify(body),
 	};
