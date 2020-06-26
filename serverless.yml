@@ -60,7 +60,8 @@ provider:
             - '/*'
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
-    DB_HOST: !ImportValue PawlogRDSEndpoint
+    # DB_HOST: !ImportValue PawlogRDSEndpoint
+    DB_HOST: 127.0.0.1
     DB_NAME: pawlog
     DB_USER: api
     DB_PSWD: aNDXJs3WGqUgXcJAXFcGG7xuB35eVV

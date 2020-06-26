@@ -3,21 +3,12 @@ import mysqlConn from '../util/mysql';
 import { Location, Contact, OperatingHours, Review } from '../model';
 
 namespace PartnerService {
-	export const createPartner = async (
-		name: string,
-		types: number[],
-		areacode: number,
-		location: Location,
-	) => {
+	export const createPartner = async (name: string, types: number[]) => {
 		let transaction = mysqlConn.transaction();
 
 		transaction = transaction
-			.query(
-				'INSERT INTO partner (images, name, areacode, address, lat, lng) VALUES (?, ?, ?, ?, ?, ?);',
-				['', name, areacode, location.address, location.lat, location.lng],
-			)
-			.query('SELECT LAST_INSERT_ID() INTO @insertid;')
-			.query('INSERT INTO partnerdetail (partnerid) VALUES (@insertid);');
+			.query('INSERT INTO partner (name) VALUES (?);', [name])
+			.query('SELECT LAST_INSERT_ID() INTO @insertid;');
 
 		types.forEach((type) => {
 			transaction = transaction.query(
@@ -41,72 +32,50 @@ namespace PartnerService {
 		const filterValues = [];
 
 		if (filter.query) {
-			filterClause += 'AND MATCH(name) AGAINST (? IN NATURAL LANGUAGE MODE)';
-			filterValues.push(filter.query);
+			filterClause += 'AND P.name LIKE ?';
+			filterValues.push(`%${filter.query}%`);
+		}
+		if (filter.type) {
+			filterClause += 'AND T.types LIKE ?';
+			filterValues.push(`%${filter.type}%`);
 		}
 		if (filter.area) {
-			filterClause += 'AND areacode=?';
+			filterClause += 'AND L.areacode = ?';
 			filterValues.push(filter.area);
 		}
 
 		let transaction = mysqlConn.transaction();
 
-		transaction = filter.type
-			? transaction
-					.query(
-						`SELECT count(*) total
-							FROM partner P
-							JOIN ptnrtyperelation R ON P.id = R.partnerid AND R.partnertypecode=? 
-							WHERE TRUE ${filterClause};`,
-						[filter.type, ...filterValues],
-					)
-					.query(
-						`SELECT P.id, P.images, P.name, P.areacode, rate, reviews, googlerate, googlereviews, GROUP_CONCAT(R2.partnertypecode) types
-							FROM partner P
-							JOIN ptnrtyperelation R ON P.id = R.partnerid AND R.partnertypecode=?
-							JOIN ptnrtyperelation R2 ON P.id = R2.partnerid
-							WHERE TRUE ${filterClause}
-							GROUP BY P.id
-							${
-								filter.query
-									? 'ORDER BY MATCH(name) AGAINST (? IN NATURAL LANGUAGE MODE) DESC'
-									: ''
-							}
-							LIMIT ?, ?;`,
-						[
-							filter.type,
-							...filterValues,
-							...(filter.query ? [filter.query] : []),
-							offset * limit,
-							limit,
-						],
-					)
-			: transaction
-					.query(
-						`SELECT count(*) total
-							FROM partner
-							WHERE TRUE ${filterClause};`,
-						[...filterValues],
-					)
-					.query(
-						`SELECT P.id, P.images, P.name, P.areacode, rate, reviews, googlerate, googlereviews, GROUP_CONCAT(R.partnertypecode) types
-							FROM partner P
-							JOIN ptnrtyperelation R ON P.id=R.partnerid
-							WHERE TRUE ${filterClause}
-							GROUP BY P.id
-							${
-								filter.query
-									? 'ORDER BY MATCH(name) AGAINST (? IN NATURAL LANGUAGE MODE) DESC'
-									: ''
-							}
-							LIMIT ?, ?;`,
-						[
-							...filterValues,
-							...(filter.query ? [filter.query] : []),
-							offset * limit,
-							limit,
-						],
-					);
+		transaction = transaction
+			.query(
+				`
+				SELECT COUNT(*) total
+					FROM partner P
+					JOIN (
+						SELECT R.partnerid, GROUP_CONCAT(R.partnertypecode) types
+							FROM ptnrtyperelation R
+							GROUP BY R.partnerid
+					) T ON P.id = T.partnerid 
+					LEFT JOIN partnerlocation L ON P.id = L.partnerid
+					WHERE TRUE ${filterClause};
+				`,
+				filterValues,
+			)
+			.query(
+				`
+				SELECT P.id, P.images, P.name, P.ratesum, P.reviews, P.googleratesum, P.googlereviews, T.types, L.areacode
+					FROM partner P
+					JOIN (
+						SELECT R.partnerid, GROUP_CONCAT(R.partnertypecode) types
+							FROM ptnrtyperelation R
+							GROUP BY R.partnerid
+					) T ON P.id = T.partnerid 
+					LEFT JOIN partnerlocation L ON P.id = L.partnerid
+					WHERE TRUE ${filterClause}
+					LIMIT ?, ?;
+				`,
+				[...filterValues, offset * limit, limit],
+			);
 
 		const [result1, result2] = await transaction.commit();
 		mysqlConn.end();
@@ -130,7 +99,7 @@ namespace PartnerService {
 					areacode: row.areacode,
 					review: {
 						averageRate:
-							(row.rate * row.reviews + row.googlerate * row.googlereviews) /
+							(row.ratesum + row.googleratesum) /
 								(row.reviews + row.googlereviews) || 0,
 						count: row.reviews + row.googlereviews,
 					},
@@ -144,106 +113,160 @@ namespace PartnerService {
 
 		transaction = transaction
 			.query(
-				'SELECT id, name, areacode, rate, reviews, googlerate, googlereviews, address, lat, lng, registered, updated FROM partner WHERE id=?;',
+				`
+				SELECT id, name, ratesum, reviews, googleratesum, googlereviews, registered, updated
+					FROM partner
+					WHERE id = ?;
+				`,
 				[partnerID],
 			)
 			.query(
-				'SELECT partnertypecode FROM ptnrtyperelation WHERE partnerid=?;',
+				'SELECT partnertypecode FROM ptnrtyperelation WHERE partnerid = ?;',
 				[partnerID],
 			)
 			.query(
-				'SELECT email, phone, monoh, tueoh, wedoh, thuoh, frioh, satoh, sunoh, phoh FROM partnerdetail WHERE partnerid=?;',
+				'SELECT areacode, address, lat, lng FROM partnerlocation WHERE partnerid = ?;',
+				[partnerID],
+			)
+			.query(
+				'SELECT email, phone, website FROM partnercontact WHERE partnerid = ?;',
+				[partnerID],
+			)
+			.query(
+				'SELECT monoh, tueoh, wedoh, thuoh, frioh, satoh, sunoh, phoh FROM partneroh WHERE partnerid = ?;',
 				[partnerID],
 			);
 
-		const [result1, result2, result3] = await transaction.commit();
+		const [
+			result1,
+			result2,
+			result3,
+			result4,
+			result5,
+		] = await transaction.commit();
 		mysqlConn.end();
 
 		return {
 			id: partnerID,
 			name: result1[0].name,
 			types: result2.map((row: any) => row.partnertypecode),
-			areacode: result1[0].areacode,
-			location: {
-				address: result1[0].address,
-				lat: result1[0].lat,
-				lng: result1[0].lng,
-			},
 			review: {
 				averageRate:
-					(result1[0].rate * result1[0].reviews +
-						result1[0].googlerate * result1[0].googlereviews) /
+					(result1[0].ratesum + result1[0].googleratesum) /
 						(result1[0].reviews + result1[0].googlereviews) || 0,
 				count: result1[0].reviews + result1[0].googlereviews,
 			},
-			detail: {
-				operatingHours: {
-					mon: result3[0].monoh,
-					tue: result3[0].tueoh,
-					wed: result3[0].wedoh,
-					thu: result3[0].thuoh,
-					fri: result3[0].frioh,
-					sat: result3[0].satoh,
-					sun: result3[0].sunoh,
-					ph: result3[0].phoh,
-				},
-				contact: {
-					email: result3[0].email,
-					phone: result3[0].phone,
-				},
-			},
 			registered: result1[0].registered,
 			updated: result1[0].updated,
+			location: result3[0]
+				? {
+						areacode: result3[0].areacode,
+						address: result3[0].address,
+						lat: result3[0].lat,
+						lng: result3[0].lng,
+				  }
+				: null,
+			contact: result4[0]
+				? {
+						email: result4[0].email,
+						phone: result4[0].phone,
+						website: result4[0].website,
+				  }
+				: null,
+			operatingHours: result5[0]
+				? {
+						mon: result5[0].monoh,
+						tue: result5[0].tueoh,
+						wed: result5[0].wedoh,
+						thu: result5[0].thuoh,
+						fri: result5[0].frioh,
+						sat: result5[0].satoh,
+						sun: result5[0].sunoh,
+						ph: result5[0].phoh,
+				  }
+				: null,
 		};
 	};
 
 	export const updatePartnerDetail = async (
 		partnerID: string,
 		name: string,
-		types: number[],
-		areacode: number,
-		location: Location,
-		operatingHours: OperatingHours,
-		contact: Contact,
+		types: string[],
+		detail: {
+			location?: Location;
+			contact?: Contact;
+			operatingHours?: OperatingHours;
+		},
 	) => {
 		let transaction = mysqlConn.transaction();
 
 		transaction = transaction
-			.query(
-				'UPDATE partner SET name=?, areacode=?, address=?, lat=?, lng=?, updated=NOW() WHERE id=?;',
-				[
-					name,
-					areacode,
-					location.address,
-					location.lat,
-					location.lng,
-					partnerID,
-				],
-			)
-			.query(
-				'UPDATE partnerdetail SET email=?, phone=?, monoh=?, tueoh=?, wedoh=?, thuoh=?, frioh=?, satoh=?, sunoh=?, phoh=? WHERE partnerid=?;',
-				[
-					contact.email,
-					contact.phone,
-					operatingHours.mon,
-					operatingHours.tue,
-					operatingHours.wed,
-					operatingHours.thu,
-					operatingHours.fri,
-					operatingHours.sat,
-					operatingHours.sun,
-					operatingHours.ph,
-					partnerID,
-				],
-			)
+			.query('UPDATE partner SET name=?, updated=NOW() WHERE id=?;', [
+				name,
+				partnerID,
+			])
 			.query('DELETE FROM ptnrtyperelation WHERE partnerid=?;', [partnerID]);
 
-		types.forEach((t) => {
+		types.forEach((type) => {
 			transaction = transaction.query(
 				'INSERT INTO ptnrtyperelation VALUES (?, ?);',
-				[partnerID, t],
+				[partnerID, type],
 			);
 		});
+
+		transaction = transaction.query(
+			'DELETE FROM partnerlocation WHERE partnerid=?;',
+			[partnerID],
+		);
+		if (detail.location) {
+			transaction = transaction.query(
+				'INSERT INTO partnerlocation (partnerid, areacode, address, lat, lng) VALUES (?, ?, ?, ?, ?);',
+				[
+					partnerID,
+					detail.location.areacode,
+					detail.location.address,
+					detail.location.lat,
+					detail.location.lng,
+				],
+			);
+		}
+
+		transaction = transaction.query(
+			'DELETE FROM partnercontact WHERE partnerid=?;',
+			[partnerID],
+		);
+		if (detail.contact) {
+			transaction = transaction.query(
+				'INSERT INTO partnercontact (partnerid, email, phone, website) VALUES (?, ?, ?, ?);',
+				[
+					partnerID,
+					detail.contact.email,
+					detail.contact.phone,
+					detail.contact.website,
+				],
+			);
+		}
+
+		transaction = transaction.query(
+			'DELETE FROM partneroh WHERE partnerid=?;',
+			[partnerID],
+		);
+		if (detail.operatingHours) {
+			transaction = transaction.query(
+				'INSERT INTO partneroh (partnerid, monoh, tueoh, wedoh, thuoh, frioh, satoh, sunoh, phoh) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);',
+				[
+					partnerID,
+					detail.operatingHours.mon,
+					detail.operatingHours.tue,
+					detail.operatingHours.wed,
+					detail.operatingHours.thu,
+					detail.operatingHours.fri,
+					detail.operatingHours.sat,
+					detail.operatingHours.sun,
+					detail.operatingHours.ph,
+				],
+			);
+		}
 
 		await transaction.commit();
 		mysqlConn.end();
@@ -256,8 +279,14 @@ namespace PartnerService {
 
 		transaction = transaction
 			.query('DELETE FROM review WHERE partnerid=?;', [partnerID])
-			.query('DELETE FROM partnerdetail WHERE partnerid=?;', [partnerID])
+			.query('DELETE FROM googlereview WHERE partnerid=?;', [partnerID])
+			.query('UPDATE answer SET refpartner=null WHERE refpartner=?;', [
+				partnerID,
+			])
 			.query('DELETE FROM ptnrtyperelation WHERE partnerid=?;', [partnerID])
+			.query('DELETE FROM partnerlocation WHERE partnerid=?;', [partnerID])
+			.query('DELETE FROM partnercontact WHERE partnerid=?;', [partnerID])
+			.query('DELETE FROM partneroh WHERE partnerid=?;', [partnerID])
 			.query('DELETE FROM partner WHERE id=?;', [partnerID]);
 
 		await transaction.commit();
@@ -370,7 +399,7 @@ namespace PartnerService {
 				[partnerID, userID, review.rate, review.content],
 			)
 			.query(
-				'UPDATE partner SET rate=((rate*reviews)+?)/(reviews+1), reviews=reviews+1 WHERE id=?;',
+				'UPDATE partner SET ratesum=ratesum+?, reviews=reviews+1 WHERE id=?;',
 				[review.rate, partnerID],
 			);
 
@@ -391,22 +420,19 @@ namespace PartnerService {
 
 		transaction = transaction
 			.query('SELECT rate INTO @rate FROM review WHERE id=?;', [reviewID])
-			.query('DELETE FROM review WHERE partnerid=? AND id=?', [
-				partnerID,
-				reviewID,
-			])
 			.query(
 				`
 				UPDATE partner SET
-					rate = (
-						CASE WHEN reviews-1 = 0 THEN 0
-						ELSE (rate*reviews-@rate)/(reviews-1) END
-					),
-					reviews = reviews - 1
+					ratesum=ratesum-@rate,
+					reviews=reviews-1
 				WHERE id=?;
 				`,
 				[partnerID],
-			);
+			)
+			.query('DELETE FROM review WHERE partnerid=? AND id=?', [
+				partnerID,
+				reviewID,
+			]);
 
 		await transaction.commit();
 		mysqlConn.end();

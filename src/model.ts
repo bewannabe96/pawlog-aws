@@ -19,9 +19,16 @@ export interface ReviewSummary {
 }
 
 export interface Location {
+	areacode: string;
 	address: string;
 	lat: number;
 	lng: number;
+}
+
+export interface Contact {
+	email?: string;
+	phone?: string;
+	website?: string;
 }
 
 export interface OperatingHours {
@@ -33,11 +40,6 @@ export interface OperatingHours {
 	sat?: string;
 	sun?: string;
 	ph?: string;
-}
-
-export interface Contact {
-	email?: string;
-	phone?: string;
 }
 
 export interface Review {

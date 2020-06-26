@@ -247,14 +247,14 @@ namespace QnAService {
 
 		transaction = transaction.query(
 			`
-				SELECT A.id, A.content, A.selected, A.refpartner, A.created,
-					P.images, P.name partnername, P.areacode, P.rate, P.reviews, P.googlerate, P.googlereviews,
-					U.id userid, U.email, U.name username, U.picture
-				FROM answer A
-				JOIN user U ON A.userid = U.id
-				JOIN partner P ON A.refpartner = P.id
-				WHERE questionid=?
-				ORDER BY created DESC;
+			SELECT A.id, A.content, A.selected, A.refpartner, A.created,
+				U.id userid, U.email, U.name username, U.picture,
+				P.images, P.name partnername, P.ratesum, P.reviews, P.googleratesum, P.googlereviews, PL.areacode
+			FROM answer A
+			JOIN user U ON A.userid = U.id
+			LEFT JOIN partner P ON A.refpartner = P.id
+			LEFT JOIN partnerlocation PL ON A.refpartner = PL.partnerid
+			WHERE questionid=?;
 				`,
 			[questionID],
 		);
@@ -264,7 +264,7 @@ namespace QnAService {
 
 		return {
 			answers: result1.map((row: any) => {
-				const imageUID = row.images.split(':')[0];
+				const imageUID = row.images?.split(':')[0];
 
 				return {
 					user: {
@@ -276,24 +276,26 @@ namespace QnAService {
 					answerID: row.id,
 					content: row.content,
 					selected: row.selected === 1,
-					refPartner: {
-						id: row.refpartner,
-						image:
-							imageUID === ''
-								? null
-								: {
-										uid: imageUID,
-										url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${row.id}/${imageUID}`,
-								  },
-						name: row.partnername,
-						areacode: row.areacode,
-						review: {
-							averageRate:
-								(row.rate * row.reviews + row.googlerate * row.googlereviews) /
-									(row.reviews + row.googlereviews) || 0,
-							count: row.reviews + row.googlereviews,
-						},
-					},
+					refPartner: row.refpartner
+						? {
+								id: row.refpartner,
+								image:
+									imageUID === ''
+										? null
+										: {
+												uid: imageUID,
+												url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${row.id}/${imageUID}`,
+										  },
+								name: row.partnername,
+								areacode: row.areacode,
+								review: {
+									averageRate:
+										(row.ratesum + row.googleratesum) /
+											(row.reviews + row.googlereviews) || 0,
+									count: row.reviews + row.googlereviews,
+								},
+						  }
+						: null,
 					created: row.created,
 				};
 			}),
@@ -304,7 +306,7 @@ namespace QnAService {
 		userID: string,
 		questionID: string,
 		content: string,
-		refPartnerID: string | null,
+		refPartnerID?: string,
 	) => {
 		let transaction = mysqlConn.transaction();
 

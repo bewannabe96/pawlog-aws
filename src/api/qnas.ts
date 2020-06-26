@@ -133,7 +133,7 @@ export const createAnswer: APIGatewayProxyHandler = async (event) => {
 	const data = JSON.parse(event.body) as {
 		userID: string;
 		content: string;
-		refPartnerID: string;
+		refPartnerID?: string;
 	};
 
 	try {
