@@ -31,7 +31,7 @@ namespace UserService {
 
 		if (result1.length == 1)
 			return {
-				id: result1[0].id,
+				id: `${result1[0].id}`,
 				name: result1[0].name,
 				email: result1[0].email,
 				picture: result1[0].picture,

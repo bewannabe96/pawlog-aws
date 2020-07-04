@@ -100,3 +100,16 @@ deleteAnswer:
             paths:
               questionID: true
               answerID: true
+
+updateAskerChoice:
+  handler: src/api/qnas.updateAskerChoice
+  events:
+    - http:
+        path: qnas/{questionID}/askerChoice
+        method: put
+        authorizer: customAuthorizer
+        cors: true
+        request:
+          parameters:
+            paths:
+              questionID: true

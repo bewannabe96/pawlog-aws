@@ -163,3 +163,23 @@ export const deleteAnswer: APIGatewayProxyHandler = async (event) => {
 		return createResponse(500, error);
 	}
 };
+
+// updateAskerChoice
+export const updateAskerChoice: APIGatewayProxyHandler = async (event) => {
+	const questionID = event.pathParameters.questionID;
+
+	const data = JSON.parse(event.body) as {
+		answerID: string;
+	};
+
+	try {
+		const result = await QnAService.updateAskerChoice(
+			questionID,
+			data.answerID,
+		);
+		return createResponse(200, result);
+	} catch (error) {
+		console.log(error);
+		return createResponse(500, error);
+	}
+};

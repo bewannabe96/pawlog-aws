@@ -188,9 +188,11 @@ namespace QnAService {
 			.query(
 				`
 				SELECT Q.id, Q.title, Q.content, Q.images, Q.answers, Q.created, Q.updated,
+					SA.answerid askerchoice,
 					U.id userid, U.email, U.name, U.picture
 				FROM question Q
 					JOIN user U ON Q.userid = U.id
+					LEFT JOIN askerchoice SA ON Q.id = SA.questionid
 				WHERE Q.id=?;
 				`,
 				[questionID],
@@ -210,7 +212,7 @@ namespace QnAService {
 		return {
 			id: questionID,
 			user: {
-				id: result1[0].userid,
+				id: `${result1[0].userid}`,
 				name: result1[0].name,
 				email: result1[0].email,
 				picture: result1[0].picture,
@@ -222,7 +224,10 @@ namespace QnAService {
 				url: `https://${process.env.QNA_IMAGE_BUCKET_DOMAIN}/${questionID}/${uid}`,
 			})),
 			answers: result1[0].answers,
-			keywords: result2.map((row: any) => row.keyword),
+			askerChoiceAnswer: result1[0].askerchoice
+				? `${result1[0].askerchoice}`
+				: result1[0].askerchoice,
+			keywords: result2.map((row: any) => `${row.keyword}`),
 			created: result1[0].created,
 			updated: result1[0].updated,
 		};
@@ -234,6 +239,7 @@ namespace QnAService {
 		transaction = transaction
 			.query('DELETE FROM answer WHERE questionid=?;', [questionID])
 			.query('DELETE FROM qstnkwrelation WHERE questionid=?;', [questionID])
+			.query('DELETE FROM askerchoice WHERE questionid=?;', [questionID])
 			.query('DELETE FROM question WHERE id=?;', [questionID]);
 
 		await transaction.commit();
@@ -247,7 +253,7 @@ namespace QnAService {
 
 		transaction = transaction.query(
 			`
-			SELECT A.id, A.content, A.selected, A.refpartner, A.created,
+			SELECT A.id, A.content, A.refpartner, A.created,
 				U.id userid, U.email, U.name username, U.picture,
 				P.images, P.name partnername, P.ratesum, P.reviews, P.googleratesum, P.googlereviews, PL.areacode
 			FROM answer A
@@ -268,14 +274,13 @@ namespace QnAService {
 
 				return {
 					user: {
-						id: row.userid,
+						id: `${row.userid}`,
 						name: row.username,
 						email: row.email,
 						picture: row.picture,
 					},
-					answerID: row.id,
+					answerID: `${row.id}`,
 					content: row.content,
-					selected: row.selected === 1,
 					refPartner: row.refpartner
 						? {
 								id: row.refpartner,
@@ -313,22 +318,66 @@ namespace QnAService {
 		transaction = transaction
 			.query(
 				`
-			INSERT INTO answer (questionid, userid, content, refpartner)
-				VALUES (?, ?, ?, ?);
-			`,
+				INSERT INTO answer (questionid, userid, content, refpartner)
+					VALUES (?, ?, ?, ?);
+				`,
 				[questionID, userID, content, refPartnerID],
+			)
+			.query('SELECT LAST_INSERT_ID() INTO @insertid;')
+			.query(
+				`
+				UPDATE question SET answers=answers+1 WHERE id=?; 
+				`,
+				[questionID],
 			)
 			.query(
 				`
-			UPDATE question SET answers=answers+1 WHERE id=?; 
-			`,
-				[questionID],
+				SELECT A.id, A.content, A.refpartner, A.created,
+					U.id userid, U.email, U.name username, U.picture,
+					P.images, P.name partnername, P.ratesum, P.reviews, P.googleratesum, P.googlereviews, PL.areacode
+				FROM answer A
+				JOIN user U ON A.userid = U.id
+				LEFT JOIN partner P ON A.refpartner = P.id
+				LEFT JOIN partnerlocation PL ON A.refpartner = PL.partnerid
+				WHERE A.id=@insertid;
+				`,
 			);
 
-		const [result1] = await transaction.commit();
+		const result4 = (await transaction.commit())[3];
 		mysqlConn.end();
 
-		return { answerID: `${result1.insertId}` };
+		const imageUID = result4[0].images?.split(':')[0];
+		return {
+			user: {
+				id: `${result4[0].userid}`,
+				name: result4[0].username,
+				email: result4[0].email,
+				picture: result4[0].picture,
+			},
+			answerID: `${result4[0].id}`,
+			content: result4[0].content,
+			refPartner: result4[0].refpartner
+				? {
+						id: result4[0].refpartner,
+						image:
+							imageUID === ''
+								? null
+								: {
+										uid: imageUID,
+										url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${result4[0].id}/${imageUID}`,
+								  },
+						name: result4[0].partnername,
+						areacode: result4[0].areacode,
+						review: {
+							averageRate:
+								(result4[0].ratesum + result4[0].googleratesum) /
+									(result4[0].reviews + result4[0].googlereviews) || 0,
+							count: result4[0].reviews + result4[0].googlereviews,
+						},
+				  }
+				: null,
+			created: result4[0].created,
+		};
 	};
 
 	export const deleteAnswer = async (questionID: string, answerID: string) => {
@@ -337,15 +386,47 @@ namespace QnAService {
 		transaction = transaction
 			.query(
 				`
-			DELETE FROM answer WHERE id=? AND questionid=?;
-			`,
+				DELETE FROM answer WHERE id=? AND questionid=?;
+				`,
 				[answerID, questionID],
 			)
 			.query(
 				`
-			UPDATE question SET answers=answers-1 WHERE id=?; 
-			`,
+				DELETE FROM askerchoice WHERE answerid=?;
+				`,
+				[answerID],
+			)
+			.query(
+				`
+				UPDATE question SET answers=answers-1 WHERE id=?; 
+				`,
 				[questionID],
+			);
+
+		await transaction.commit();
+		mysqlConn.end();
+
+		return { answerID: answerID };
+	};
+
+	export const updateAskerChoice = async (
+		questionID: string,
+		answerID: string,
+	) => {
+		let transaction = mysqlConn.transaction();
+
+		transaction = transaction
+			.query(
+				`
+				DELETE FROM askerchoice WHERE questionid=?;
+				`,
+				[questionID],
+			)
+			.query(
+				`
+				INSERT INTO askerchoice (questionid, answerid) VALUES (?, ?);
+				`,
+				[questionID, answerID],
 			);
 
 		await transaction.commit();
