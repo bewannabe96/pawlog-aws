@@ -72,7 +72,7 @@ namespace PartnerImageService {
 			Delete: { Objects: [] },
 		};
 
-		data.Contents.forEach(content =>
+		data.Contents.forEach((content) =>
 			params.Delete.Objects.push({ Key: content.Key }),
 		);
 
@@ -81,6 +81,57 @@ namespace PartnerImageService {
 				if (data) resolve(data);
 				else reject(error);
 			}),
+		);
+	};
+
+	export const uploadReviewImage = async (
+		partnerID: string,
+		reviewID: string,
+		uid: string,
+		data: Buffer,
+	) => {
+		const buffer = await new Promise((resolve, reject) =>
+			sharp(data)
+				.resize({ width: 1024, height: 768, fit: sharp.fit.cover })
+				.jpeg()
+				.toBuffer((error, buffer) => {
+					if (buffer) resolve(buffer);
+					else reject(error);
+				}),
+		);
+
+		await new Promise((resolve, reject) =>
+			s3Bucket.putObject(
+				{
+					Bucket: process.env.PARTNER_IMAGE_BUCKET,
+					ACL: 'public-read',
+					Key: `${partnerID}/${reviewID}/${uid}`,
+					ContentType: 'image/jpeg',
+					Body: buffer,
+				},
+				(error, data) => {
+					if (data) resolve(data);
+					else reject(error);
+				},
+			),
+		);
+	};
+
+	export const deleteReviewImages = async (
+		partnerID: string,
+		reviewID: string,
+	) => {
+		await new Promise((resolve, reject) =>
+			s3Bucket.deleteObject(
+				{
+					Bucket: process.env.PARTNER_IMAGE_BUCKET,
+					Key: `${partnerID}/${reviewID}`,
+				},
+				(error, data) => {
+					if (data) resolve(data);
+					else reject(error);
+				},
+			),
 		);
 	};
 }

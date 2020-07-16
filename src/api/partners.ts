@@ -210,6 +210,7 @@ export const deletePartnerReview: APIGatewayProxyHandler = async (event) => {
 	const reviewID = event.pathParameters.reviewID;
 
 	try {
+		await PartnerImageService.deleteReviewImages(partnerID, reviewID);
 		const result = await PartnerService.deletePartnerReview(
 			partnerID,
 			reviewID,
@@ -218,6 +219,35 @@ export const deletePartnerReview: APIGatewayProxyHandler = async (event) => {
 	} catch (error) {
 		console.log(error);
 		return createResponse(500, error);
+	}
+};
+
+// uploadReivewImage
+export const uploadReviewImage: APIGatewayProxyHandler = async (event) => {
+	const partnerID = event.pathParameters.partnerID;
+	const reviewID = event.pathParameters.reviewID;
+	const uid = event.pathParameters.uid;
+	const data = Buffer.from(event.body, 'base64');
+
+	try {
+		const result = await PartnerService.addPartnerReviewImage(
+			partnerID,
+			reviewID,
+			uid,
+		);
+		await PartnerImageService.uploadReviewImage(partnerID, reviewID, uid, data);
+		return createResponse(200, result);
+	} catch (error) {
+		console.log(error);
+		switch (error) {
+			case 'ImageCapacityFull':
+				return createResponse(500, {
+					message:
+						'Maximum 2 images are allowed. No more images can be uploaded.',
+				});
+			default:
+				return createResponse(500, error);
+		}
 	}
 };
 

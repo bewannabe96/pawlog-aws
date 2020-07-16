@@ -145,6 +145,21 @@ deletePartnerReview:
               partnerID: true
               reviewID: true
 
+uploadReviewImage:
+  handler: src/api/partners.uploadReviewImage
+  events:
+    - http:
+        path: partners/{partnerID}/reviews/{reviewID}/images/{uid}
+        method: post
+        authorizer: customAuthorizer
+        cors: true
+        request:
+          parameters:
+            paths:
+              partnerID: true
+              reviewID: true
+              uid: true
+
 getPartnerGoogleReviews:
   handler: src/api/partners.getPartnerGoogleReviews
   events:

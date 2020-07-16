@@ -308,12 +308,10 @@ namespace PartnerService {
 		const uids = result1[0].images === '' ? [] : result1[0].images.split(':');
 
 		return {
-			images: uids.map((uid: any) => {
-				return {
-					uid: uid,
-					url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${partnerID}/${uid}`,
-				};
-			}),
+			images: uids.map((uid: any) => ({
+				uid: uid,
+				url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${partnerID}/${uid}`,
+			})),
 		};
 	};
 
@@ -352,7 +350,7 @@ namespace PartnerService {
 			.query('SELECT count(id) total FROM review;')
 			.query(
 				`
-				SELECT U.id userid, U.email, U.name, U.picture, R.id reviewid, R.rate, R.content, R.created
+				SELECT U.id userid, U.email, U.name, U.picture, R.id reviewid, R.rate, R.images, R.content, R.created
 				FROM review R
 				JOIN user U
 				WHERE U.id=R.userid && partnerid=?
@@ -367,22 +365,27 @@ namespace PartnerService {
 
 		return {
 			total: result1[0].total,
-			reviews: result2.map((row: any) => {
-				return {
-					user: {
-						id: row.userid,
-						name: row.name,
-						email: row.email,
-						picture: row.picture,
-					},
-					reviewID: row.reviewid,
-					review: {
-						rate: row.rate,
-						content: row.content,
-					},
-					created: row.created,
-				};
-			}),
+			reviews: result2.map((row: any) => ({
+				user: {
+					id: `${row.userid}`,
+					name: row.name,
+					email: row.email,
+					picture: row.picture,
+				},
+				reviewID: row.reviewid,
+				review: {
+					rate: row.rate,
+					images:
+						row.images === ''
+							? []
+							: row.images.split(':').map((uid: any) => ({
+									uid: uid,
+									url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${partnerID}/${row.reviewid}/${uid}`,
+							  })),
+					content: row.content,
+				},
+				created: row.created,
+			})),
 		};
 	};
 
@@ -438,6 +441,37 @@ namespace PartnerService {
 		mysqlConn.end();
 
 		return { reviewID: reviewID };
+	};
+
+	export const addPartnerReviewImage = async (
+		partnerID: string,
+		reviewID: string,
+		uid: string,
+	) => {
+		let transaction = mysqlConn.transaction();
+		transaction = transaction.query('SELECT images FROM review WHERE id=?;', [
+			reviewID,
+		]);
+		const [result1] = await transaction.commit();
+
+		const uids: string[] =
+			result1[0].images === '' ? [] : result1[0].images.split(':');
+		if (uids.length >= 2) throw 'ImageCapacityFull';
+		uids.push(uid);
+
+		transaction = mysqlConn.transaction();
+		transaction = transaction.query('UPDATE review SET images=? WHERE id=?;', [
+			uids.join(':'),
+			reviewID,
+		]);
+		await transaction.commit();
+
+		mysqlConn.end();
+
+		return {
+			uid: uid,
+			url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${partnerID}/${reviewID}/${uid}`,
+		};
 	};
 
 	export const getPartnerGoogleReviews = async (partnerID: string) => {

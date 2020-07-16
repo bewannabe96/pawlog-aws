@@ -1,0 +1,1190 @@
+swagger: '2.0'
+info:
+  version: '1.0.0'
+  title: Pawlog API
+  description: 'Pawlog API'
+  contact:
+    email: rnjssh96@gmail.com
+
+tags:
+  - name: Config
+    description: Configs operations
+  - name: Partner
+    description: Partners operations
+  - name: User
+    description: Users operations
+  - name: QnA
+    description: QnA operations
+
+paths:
+  /configs/areas:
+    get:
+      tags:
+        - Config
+      description: Get list of areas
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successfully returned a list of areas
+          schema:
+            type: object
+            properties:
+              groups:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                    name:
+                      type: string
+              areas:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                    group:
+                      type: string
+                    name:
+                      type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /configs/partnerTypes:
+    get:
+      tags:
+        - Config
+      description: Get list of partner types
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successfully returned a list of partner types
+          schema:
+            type: object
+            properties:
+              groups:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                    name:
+                      type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /configs/questionKeywords:
+    get:
+      tags:
+        - Config
+      description: Get list of question keywords
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successfully returned a list of question keywords
+          schema:
+            type: object
+            properties:
+              groups:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                    name:
+                      type: string
+              keywords:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                    group:
+                      type: string
+                    name:
+                      type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /users:
+    get:
+      tags:
+        - User
+      description: Get user identified by user sub ID
+      produces:
+        - application/json
+      parameters:
+        - name: sub
+          in: query
+          description: Sub identifier of a user
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully returned user
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              email:
+                type: string
+              picture:
+                type: string
+                nullable: true
+        '404':
+          $ref: '#/responses/NotFound'
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /partners:
+    get:
+      tags:
+        - Partner
+      description: Get list of partners
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/PageLimit'
+        - $ref: '#/parameters/PageOffset'
+        - name: q
+          in: query
+          description: Partners search query
+          type: string
+        - name: type
+          in: query
+          description: Filters partners by type
+          type: string
+        - name: area
+          in: query
+          description: Filters partners by area
+          type: string
+      responses:
+        '200':
+          description: Successfully returned a list of partners
+          schema:
+            type: object
+            properties:
+              total:
+                type: integer
+              partners:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    image:
+                      $ref: '#/definitions/Image'
+                      nullable: true
+                    name:
+                      type: string
+                    types:
+                      type: array
+                      items:
+                        type: string
+                    areacode:
+                      type: string
+                      nullable: true
+                    review:
+                      $ref: '#/definitions/ReviewSummary'
+        default:
+          $ref: '#/responses/InternalServerError'
+
+    post:
+      tags:
+        - Partner
+      description: Create a new partner
+      produces:
+        - application/json
+      parameters:
+        - name: data
+          in: body
+          description: Partner to be created
+          required: true
+          schema:
+            type: object
+            required:
+              - name
+              - types
+            properties:
+              name:
+                type: string
+              types:
+                type: array
+                items:
+                  type: string
+      responses:
+        '200':
+          description: Successfully created a new partner
+          schema:
+            type: object
+            properties:
+              partnerID:
+                type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /partners/{partnerID}:
+    get:
+      tags:
+        - Partner
+      description: Get details of a partner identified by partner ID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/PartnerID'
+      responses:
+        '200':
+          description: Successfully returned a partner information
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              types:
+                type: array
+                items:
+                  type: string
+              review:
+                $ref: '#/definitions/ReviewSummary'
+              registered:
+                type: string
+              updated:
+                type: string
+              location:
+                $ref: '#/definitions/Location'
+                nullable: true
+              contact:
+                $ref: '#/definitions/Contact'
+                nullable: true
+              operatingHours:
+                $ref: '#/definitions/OperatingHours'
+                nullable: true
+        default:
+          $ref: '#/responses/InternalServerError'
+
+    put:
+      tags:
+        - Partner
+      description: Update details of a partner identified by partner ID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/PartnerID'
+        - name: data
+          in: body
+          description: Partner to be updated/replaced
+          required: true
+          schema:
+            type: object
+            required:
+              - name
+              - types
+            properties:
+              name:
+                type: string
+              types:
+                type: array
+                items:
+                  type: string
+              location:
+                $ref: '#/definitions/Location'
+              contact:
+                $ref: '#/definitions/Contact'
+              operatingHours:
+                $ref: '#/definitions/OperatingHours'
+      responses:
+        '200':
+          description: Successfully returned a partner information
+          schema:
+            type: object
+            properties:
+              partnerID:
+                type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Partner
+      description: Delete all information of a partner identified by partner ID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/PartnerID'
+      responses:
+        '200':
+          description: Successfully deleted a partner information
+          schema:
+            type: object
+            properties:
+              partnerID:
+                type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /partners/{partnerID}/images:
+    get:
+      tags:
+        - Partner
+      description: Get images of a partner identified by partner ID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/PartnerID'
+      responses:
+        '200':
+          description: Successfully returned partner images
+          schema:
+            type: object
+            properties:
+              images:
+                type: array
+                items:
+                  $ref: '#/definitions/Image'
+        default:
+          $ref: '#/responses/InternalServerError'
+
+    put:
+      tags:
+        - Partner
+      description: Update images of a partner identified by partner ID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/PartnerID'
+        - name: data
+          in: body
+          description: Partner images to be updated/replaced
+          required: true
+          schema:
+            type: object
+            properties:
+              uids:
+                type: array
+                items:
+                  type: string
+      responses:
+        '200':
+          description: Successfully updated partner images
+          schema:
+            type: object
+            properties:
+              images:
+                type: array
+                items:
+                  $ref: '#/definitions/Image'
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /partners/{partnerID}/images/{uid}:
+    post:
+      tags:
+        - Partner
+      description: Upload image of a partner identified by partner ID and image UID
+      consumes:
+        - image/*
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/PartnerID'
+        - name: uid
+          in: path
+          required: true
+          type: string
+        - name: data
+          in: body
+          description: Partner image binary data
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully uploaded partner image
+          schema:
+            type: object
+            properties:
+              uid:
+                type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Partner
+      description: Delete image of a partner identified by partner ID and image UID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/PartnerID'
+        - name: uid
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully deleted partner image
+          schema:
+            type: object
+            properties:
+              uid:
+                type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /partners/{partnerID}/reviews:
+    get:
+      tags:
+        - Partner
+      description: Get reviews of a partner identified by partner ID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/PartnerID'
+        - $ref: '#/parameters/PageLimit'
+        - $ref: '#/parameters/PageOffset'
+      responses:
+        '200':
+          description: Successfully returned partner reviews
+          schema:
+            type: object
+            properties:
+              total:
+                type: integer
+              reviews:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    user:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        email:
+                          type: string
+                        picture:
+                          type: string
+                          nullable: true
+                    reviewID:
+                      type: string
+                    review:
+                      type: object
+                      properties:
+                        rate:
+                          type: integer
+                        images:
+                          $ref: '#/definitions/Image'
+                        content:
+                          type: string
+                    created:
+                      type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+    post:
+      tags:
+        - Partner
+      description: Create a review to a partner identified by partner ID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/PartnerID'
+        - name: data
+          in: body
+          description: Partner review to be created
+          required: true
+          schema:
+            type: object
+            required:
+              - userID
+              - review
+            properties:
+              userID:
+                type: string
+              review:
+                type: object
+                required:
+                  - rate
+                  - content
+                properties:
+                  rate:
+                    type: integer
+                  content:
+                    type: string
+      responses:
+        '200':
+          description: Successfully created a partner review
+          schema:
+            type: object
+            properties:
+              reviewID:
+                type: string
+              review:
+                type: object
+                properties:
+                  rate:
+                    type: integer
+                  content:
+                    type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /partners/{partnerID}/reviews/{reviewID}:
+    delete:
+      tags:
+        - Partner
+      description: Delete a partner review identified by partner ID and review ID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/PartnerID'
+        - name: reviewID
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully deleted a partner review
+          schema:
+            type: object
+            properties:
+              reviewID:
+                type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /partners/{partnerID}/reviews/{reviewID}/images/{uid}:
+    post:
+      tags:
+        - Partner
+      description: Upload image of a review identified by partner ID, review ID and image UID
+      consumes:
+        - image/*
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/PartnerID'
+        - name: reviewID
+          in: path
+          required: true
+          type: string
+        - name: uid
+          in: path
+          required: true
+          type: string
+        - name: data
+          in: body
+          description: Partner image binary data
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully uploaded review image
+          schema:
+            $ref: '#/definitions/Image'
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /partners/{partnerID}/googleReviews:
+    get:
+      tags:
+        - Partner
+      description: Get google reviews of a partner identified by partner ID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/PartnerID'
+      responses:
+        '200':
+          description: Successfully returned partner google reviews
+          schema:
+            type: object
+            properties:
+              total:
+                type: integer
+              reviews:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    reviewID:
+                      type: string
+                    name:
+                      type: string
+                    photo:
+                      type: string
+                      nullable: true
+                    review:
+                      type: object
+                      properties:
+                        rate:
+                          type: integer
+                        content:
+                          type: string
+                    created:
+                      type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /qnas:
+    get:
+      tags:
+        - QnA
+      description: Get list of questions
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/PageLimit'
+        - $ref: '#/parameters/PageOffset'
+        - name: q
+          in: query
+          description: QnA search query
+          type: string
+        - name: keywords
+          in: query
+          description: Filters QnAs by keywords
+          type: string
+      responses:
+        '200':
+          description: Successfully returned a list of QnAs
+          schema:
+            type: object
+            properties:
+              total:
+                type: integer
+              qnas:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    user:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        email:
+                          type: string
+                        picture:
+                          type: string
+                          nullable: true
+                    title:
+                      type: string
+                    answers:
+                      type: integer
+                    keywords:
+                      type: array
+                      items:
+                        type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+    post:
+      tags:
+        - QnA
+      description: Create a new question
+      produces:
+        - application/json
+      parameters:
+        - name: data
+          in: body
+          description: Question to be created
+          required: true
+          schema:
+            type: object
+            required:
+              - userID
+              - title
+              - content
+              - images
+              - keywords
+            properties:
+              userID:
+                type: string
+              title:
+                type: string
+              content:
+                type: string
+              images:
+                type: array
+                items:
+                  type: string
+              keywords:
+                type: array
+                items:
+                  type: string
+      responses:
+        '200':
+          description: Successfully created a new question
+          schema:
+            type: object
+            properties:
+              questionID:
+                type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /qnas/waitings:
+    get:
+      tags:
+        - QnA
+      description: Get list of questions that are not answered
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/PageLimit'
+        - $ref: '#/parameters/PageOffset'
+      responses:
+        '200':
+          description: Successfully returned a list of QnAs
+          schema:
+            type: object
+            properties:
+              total:
+                type: integer
+              qnas:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    user:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        email:
+                          type: string
+                        picture:
+                          type: string
+                          nullable: true
+                    title:
+                      type: string
+                    answers:
+                      type: integer
+                    keywords:
+                      type: array
+                      items:
+                        type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /qnas/{questionID}:
+    get:
+      tags:
+        - QnA
+      description: Get detail of a QnA
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/QuestionID'
+      responses:
+        '200':
+          description: Successfully returned a question detail
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              user:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  email:
+                    type: string
+                  picture:
+                    type: string
+                    nullable: true
+              title:
+                type: string
+              content:
+                type: string
+              images:
+                type: array
+                items:
+                  $ref: '#/definitions/Image'
+              answers:
+                type: integer
+              askerChoiceAnswer:
+                type: string
+                nullable: true
+              keywords:
+                type: array
+                items:
+                  type: string
+              created:
+                type: string
+              updated:
+                type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+    delete:
+      tags:
+        - QnA
+      description: Delete a question identified by question ID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/QuestionID'
+      responses:
+        '200':
+          description: Successfully deleted a question
+          schema:
+            type: object
+            properties:
+              questionID:
+                type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /qnas/{questionID}/images/{uid}:
+    post:
+      tags:
+        - QnA
+      description: Upload reference image of a question identified by question ID
+      consumes:
+        - image/*
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/QuestionID'
+        - name: uid
+          in: path
+          required: true
+          type: string
+        - name: data
+          in: body
+          description: Image binary data
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully uploaded question reference image
+          schema:
+            type: object
+            properties:
+              uid:
+                type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /qnas/{questionID}/answers:
+    get:
+      tags:
+        - QnA
+      description: Get list of QnA answers
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/QuestionID'
+      responses:
+        '200':
+          description: Successfully returned answers
+          schema:
+            type: object
+            properties:
+              answers:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    user:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        email:
+                          type: string
+                        picture:
+                          type: string
+                          nullable: true
+                    answerID:
+                      type: string
+                    content:
+                      type: string
+                    refPartner:
+                      type: object
+                      nullable: true
+                      properties:
+                        id:
+                          type: string
+                        image:
+                          $ref: '#/definitions/Image'
+                        name:
+                          type: string
+                        areacode:
+                          type: string
+                        review:
+                          $ref: '#/definitions/ReviewSummary'
+                    created:
+                      type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+    post:
+      tags:
+        - QnA
+      description: Create an answer to a question identified by question ID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/QuestionID'
+        - name: data
+          in: body
+          description: Answer to be created
+          required: true
+          schema:
+            type: object
+            required:
+              - userID
+              - content
+            properties:
+              userID:
+                type: string
+              content:
+                type: string
+              refPartnerID:
+                type: string
+      responses:
+        '200':
+          description: Successfully created an answer
+          schema:
+            type: object
+            properties:
+              user:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  email:
+                    type: string
+                  picture:
+                    type: string
+                    nullable: true
+              answerID:
+                type: string
+              content:
+                type: string
+              refPartner:
+                type: object
+                nullable: true
+                properties:
+                  id:
+                    type: string
+                  image:
+                    $ref: '#/definitions/Image'
+                  name:
+                    type: string
+                  areacode:
+                    type: string
+                  review:
+                    $ref: '#/definitions/ReviewSummary'
+              created:
+                type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /qnas/{questionID}/answers/{answerID}:
+    delete:
+      tags:
+        - QnA
+      description: Delete an answer identified by question ID and answer ID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/QuestionID'
+        - name: answerID
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully deleted an answer
+          schema:
+            type: object
+            properties:
+              answerID:
+                type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /qnas/{questionID}/askerChoice:
+    put:
+      tags:
+        - QnA
+      description: Set an answer as an asker's choice identified by question ID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/QuestionID'
+        - name: data
+          in: body
+          description: Answer to be chosen
+          required: true
+          schema:
+            type: object
+            required:
+              - answerID
+            properties:
+              answerID:
+                type: string
+      responses:
+        '200':
+          description: Successfully set asker's choice answer
+          schema:
+            type: object
+            properties:
+              answerID:
+                type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+parameters:
+  PageLimit:
+    name: limit
+    in: query
+    description: Limits the number of items on a page
+    type: integer
+  PageOffset:
+    name: offset
+    in: query
+    description: Specifies the page number of the artists to be displayed
+    type: integer
+
+  PartnerID:
+    name: partnerID
+    in: path
+    required: true
+    type: string
+  QuestionID:
+    name: questionID
+    in: path
+    required: true
+    type: string
+
+responses:
+  NotFound:
+    description: The specified resource was not found
+    schema:
+      $ref: '#/definitions/Error'
+  InternalServerError:
+    description: Unknown error has occured on server
+    schema:
+      $ref: '#/definitions/UnknownError'
+
+definitions:
+  Error:
+    type: object
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+  UnknownError:
+    type: object
+    required:
+      - message
+    properties:
+      message:
+        type: string
+  ReviewSummary:
+    type: object
+    required:
+      - averageRate
+      - count
+    properties:
+      averageRate:
+        type: number
+      count:
+        type: integer
+  Location:
+    type: object
+    properties:
+      areacode:
+        type: string
+      address:
+        type: string
+      lat:
+        type: number
+      lng:
+        type: number
+  OperatingHours:
+    type: object
+    properties:
+      mon:
+        type: string
+      tue:
+        type: string
+      wed:
+        type: string
+      thu:
+        type: string
+      fri:
+        type: string
+      sat:
+        type: string
+      sun:
+        type: string
+      ph:
+        type: string
+  Contact:
+    type: object
+    properties:
+      email:
+        type: string
+      phone:
+        type: string
+      website:
+        type: string
+  Image:
+    type: object
+    required:
+      - uid
+      - url
+    properties:
+      uid:
+        type: string
+      url:
+        type: string
+  Review:
+    type: object
+    required:
+      - rate
+      - content
+    properties:
+      rate:
+        type: number
+      content:
+        type: string
