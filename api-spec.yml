@@ -147,6 +147,130 @@ paths:
         default:
           $ref: '#/responses/InternalServerError'
 
+  /users/{userID}/reviews:
+    get:
+      tags:
+        - User
+      description: Get user created reviews identified by userID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/UserID'
+      responses:
+        '200':
+          description: Successfully returned a list of reviews
+          schema:
+            type: object
+            properties:
+              reviews:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    partner:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        image:
+                          $ref: '#/definitions/Image'
+                          nullable: true
+                    review:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        rate:
+                          type: integer
+                        images:
+                          type: array
+                          items:
+                            $ref: '#/definitions/Image'
+                        content:
+                          type: string
+                        created:
+                          type: string
+
+  /users/{userID}/qnas/questions:
+    get:
+      tags:
+        - User
+      description: Get user created questions identified by userID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/UserID'
+      responses:
+        '200':
+          description: Successfully returned a list of questions
+          schema:
+            type: object
+            properties:
+              questions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    title:
+                      type: string
+                    answers:
+                      type: integer
+                    keywords:
+                      type: array
+                      items:
+                        type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
+  /users/{userID}/qnas/answers:
+    get:
+      tags:
+        - User
+      description: Get user created answers identified by userID
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/UserID'
+      responses:
+        '200':
+          description: Successfully returned a list of answers
+          schema:
+            type: object
+            properties:
+              answers:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    user:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        email:
+                          type: string
+                        picture:
+                          type: string
+                          nullable: true
+                    title:
+                      type: string
+                    answers:
+                      type: integer
+                    keywords:
+                      type: array
+                      items:
+                        type: string
+        default:
+          $ref: '#/responses/InternalServerError'
+
   /partners:
     get:
       tags:
@@ -661,7 +785,7 @@ paths:
           type: string
       responses:
         '200':
-          description: Successfully returned a list of QnAs
+          description: Successfully returned a list of questions
           schema:
             type: object
             properties:
@@ -1080,6 +1204,11 @@ parameters:
     description: Specifies the page number of the artists to be displayed
     type: integer
 
+  UserID:
+    name: userID
+    in: path
+    required: true
+    type: string
   PartnerID:
     name: partnerID
     in: path

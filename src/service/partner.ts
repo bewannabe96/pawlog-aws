@@ -1,4 +1,8 @@
 import mysqlConn from '../util/mysql';
+import {
+	partnerImagesToReferences,
+	reviewImagesToReferences,
+} from '../util/image';
 
 import { Location, Contact, OperatingHours, Review } from '../model';
 
@@ -82,29 +86,19 @@ namespace PartnerService {
 
 		return {
 			total: result1[0].total,
-			partners: result2.map((row: any) => {
-				const imageUID = row.images.split(':')[0];
-
-				return {
-					id: row.id.toString(),
-					image:
-						imageUID === ''
-							? null
-							: {
-									uid: imageUID,
-									url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${row.id}/${imageUID}`,
-							  },
-					name: row.name,
-					types: row.types.split(','),
-					areacode: row.areacode,
-					review: {
-						averageRate:
-							(row.ratesum + row.googleratesum) /
-								(row.reviews + row.googlereviews) || 0,
-						count: row.reviews + row.googlereviews,
-					},
-				};
-			}),
+			partners: result2.map((row: any) => ({
+				id: row.id.toString(),
+				image: partnerImagesToReferences(row.id, row.images)[0] || null,
+				name: row.name,
+				types: row.types.split(','),
+				areacode: row.areacode,
+				review: {
+					averageRate:
+						(row.ratesum + row.googleratesum) /
+							(row.reviews + row.googlereviews) || 0,
+					count: row.reviews + row.googlereviews,
+				},
+			})),
 		};
 	};
 
@@ -305,13 +299,8 @@ namespace PartnerService {
 		const [result1] = await transaction.commit();
 		mysqlConn.end();
 
-		const uids = result1[0].images === '' ? [] : result1[0].images.split(':');
-
 		return {
-			images: uids.map((uid: any) => ({
-				uid: uid,
-				url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${partnerID}/${uid}`,
-			})),
+			images: partnerImagesToReferences(partnerID, result1[0].images),
 		};
 	};
 
@@ -330,12 +319,7 @@ namespace PartnerService {
 		mysqlConn.end();
 
 		return {
-			images: uids.map((uid: any) => {
-				return {
-					uid: uid,
-					url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${partnerID}/${uid}`,
-				};
-			}),
+			images: partnerImagesToReferences(partnerID, uids.join(':')),
 		};
 	};
 
@@ -375,13 +359,7 @@ namespace PartnerService {
 				reviewID: row.reviewid,
 				review: {
 					rate: row.rate,
-					images:
-						row.images === ''
-							? []
-							: row.images.split(':').map((uid: any) => ({
-									uid: uid,
-									url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${partnerID}/${row.reviewid}/${uid}`,
-							  })),
+					images: reviewImagesToReferences(partnerID, row.reviewid, row.images),
 					content: row.content,
 				},
 				created: row.created,
@@ -468,10 +446,7 @@ namespace PartnerService {
 
 		mysqlConn.end();
 
-		return {
-			uid: uid,
-			url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${partnerID}/${reviewID}/${uid}`,
-		};
+		return reviewImagesToReferences(partnerID, reviewID, uid)[0];
 	};
 
 	export const getPartnerGoogleReviews = async (partnerID: string) => {

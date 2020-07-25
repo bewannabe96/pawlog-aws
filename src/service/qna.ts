@@ -1,4 +1,8 @@
 import mysqlConn from '../util/mysql';
+import {
+	questionImagesToReferences,
+	partnerImagesToReferences,
+} from '../util/image';
 
 namespace QnAService {
 	export const createQuestion = async (
@@ -207,8 +211,6 @@ namespace QnAService {
 		const [result1, result2] = await transaction.commit();
 		mysqlConn.end();
 
-		const uids = result1[0].images === '' ? [] : result1[0].images.split(':');
-
 		return {
 			id: questionID,
 			user: {
@@ -219,10 +221,7 @@ namespace QnAService {
 			},
 			title: result1[0].title,
 			content: result1[0].content,
-			images: uids.map((uid: any) => ({
-				uid: uid,
-				url: `https://${process.env.QNA_IMAGE_BUCKET_DOMAIN}/${questionID}/${uid}`,
-			})),
+			images: questionImagesToReferences(questionID, result1[0].images),
 			answers: result1[0].answers,
 			askerChoiceAnswer: result1[0].askerchoice
 				? `${result1[0].askerchoice}`
@@ -269,41 +268,33 @@ namespace QnAService {
 		mysqlConn.end();
 
 		return {
-			answers: result1.map((row: any) => {
-				const imageUID = row.images?.split(':')[0];
-
-				return {
-					user: {
-						id: `${row.userid}`,
-						name: row.username,
-						email: row.email,
-						picture: row.picture,
-					},
-					answerID: `${row.id}`,
-					content: row.content,
-					refPartner: row.refpartner
-						? {
-								id: row.refpartner,
-								image:
-									imageUID === ''
-										? null
-										: {
-												uid: imageUID,
-												url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${row.id}/${imageUID}`,
-										  },
-								name: row.partnername,
-								areacode: row.areacode,
-								review: {
-									averageRate:
-										(row.ratesum + row.googleratesum) /
-											(row.reviews + row.googlereviews) || 0,
-									count: row.reviews + row.googlereviews,
-								},
-						  }
-						: null,
-					created: row.created,
-				};
-			}),
+			answers: result1.map((row: any) => ({
+				user: {
+					id: `${row.userid}`,
+					name: row.username,
+					email: row.email,
+					picture: row.picture,
+				},
+				answerID: `${row.id}`,
+				content: row.content,
+				refPartner: row.refpartner
+					? {
+							id: row.refpartner,
+							image:
+								partnerImagesToReferences(row.refpartner, row.images)[0] ||
+								null,
+							name: row.partnername,
+							areacode: row.areacode,
+							review: {
+								averageRate:
+									(row.ratesum + row.googleratesum) /
+										(row.reviews + row.googlereviews) || 0,
+								count: row.reviews + row.googlereviews,
+							},
+					  }
+					: null,
+				created: row.created,
+			})),
 		};
 	};
 
@@ -346,7 +337,6 @@ namespace QnAService {
 		const result4 = (await transaction.commit())[3];
 		mysqlConn.end();
 
-		const imageUID = result4[0].images?.split(':')[0];
 		return {
 			user: {
 				id: `${result4[0].userid}`,
@@ -360,12 +350,8 @@ namespace QnAService {
 				? {
 						id: result4[0].refpartner,
 						image:
-							imageUID === ''
-								? null
-								: {
-										uid: imageUID,
-										url: `https://${process.env.PARTNER_IMAGE_BUCKET_DOMAIN}/${result4[0].id}/${imageUID}`,
-								  },
+							partnerImagesToReferences(result4[0].id, result4[0].images)[0] ||
+							null,
 						name: result4[0].partnername,
 						areacode: result4[0].areacode,
 						review: {

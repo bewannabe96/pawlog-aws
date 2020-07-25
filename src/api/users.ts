@@ -25,3 +25,51 @@ export const getUser: APIGatewayProxyHandler = async (event) => {
 		}
 	}
 };
+
+// getUserReviews
+export const getUserReviews: APIGatewayProxyHandler = async (event) => {
+	const userID = event.pathParameters.userID;
+
+	try {
+		const result = await UserService.getUserReviews(userID);
+		return createResponse(200, result);
+	} catch (error) {
+		console.log(error);
+		switch (error) {
+			default:
+				return createResponse(500, error);
+		}
+	}
+};
+
+// getUserQuestions
+export const getUserQuestions: APIGatewayProxyHandler = async (event) => {
+	const userID = event.pathParameters.userID;
+
+	try {
+		const result = await UserService.getUserQuestions(userID);
+		return createResponse(200, result);
+	} catch (error) {
+		console.log(error);
+		switch (error) {
+			default:
+				return createResponse(500, error);
+		}
+	}
+};
+
+// getUserAnswers
+export const getUserAnswers: APIGatewayProxyHandler = async (event) => {
+	const userID = event.pathParameters.userID;
+
+	try {
+		const result = await UserService.getUserAnswers(userID);
+		return createResponse(200, result);
+	} catch (error) {
+		console.log(error);
+		switch (error) {
+			default:
+				return createResponse(500, error);
+		}
+	}
+};

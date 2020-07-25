@@ -10,3 +10,42 @@ getUser:
           parameters:
             querystrings:
               sub: true
+
+getUserReviews:
+  handler: src/api/users.getUserReviews
+  events:
+    - http:
+        path: users/{userID}/reviews
+        method: get
+        authorizer: customAuthorizer
+        cors: true
+        request:
+          parameters:
+            paths:
+              userID: true
+
+getUserQuestions:
+  handler: src/api/users.getUserQuestions
+  events:
+    - http:
+        path: users/{userID}/qnas/questions
+        method: get
+        authorizer: customAuthorizer
+        cors: true
+        request:
+          parameters:
+            paths:
+              userID: true
+
+getUserAnswers:
+  handler: src/api/users.getUserAnswers
+  events:
+    - http:
+        path: users/{userID}/qnas/answers
+        method: get
+        authorizer: customAuthorizer
+        cors: true
+        request:
+          parameters:
+            paths:
+              userID: true
