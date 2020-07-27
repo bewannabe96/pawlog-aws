@@ -3,6 +3,7 @@ import {
 	partnerImagesToReferences,
 	reviewImagesToReferences,
 } from '../util/image';
+import { isCurrentlyOpened } from '../util/operating-hours';
 
 import { Location, Contact, OperatingHours, Review } from '../model';
 
@@ -67,16 +68,18 @@ namespace PartnerService {
 			)
 			.query(
 				`
-				SELECT P.id, P.images, P.name, P.ratesum, P.reviews, P.googleratesum, P.googlereviews, T.types, L.areacode
-					FROM partner P
-					JOIN (
-						SELECT R.partnerid, GROUP_CONCAT(R.partnertypecode) types
-							FROM ptnrtyperelation R
-							GROUP BY R.partnerid
-					) T ON P.id = T.partnerid 
-					LEFT JOIN partnerlocation L ON P.id = L.partnerid
-					WHERE TRUE ${filterClause}
-					LIMIT ?, ?;
+				SELECT P.id, P.images, P.name, P.ratesum, P.reviews, P.googleratesum, P.googlereviews, T.types, L.areacode,
+					PO.monoh, PO.tueoh, PO.wedoh, PO.thuoh, PO.frioh, PO.satoh, PO.sunoh
+				FROM partner P
+				JOIN (
+					SELECT R.partnerid, GROUP_CONCAT(R.partnertypecode) types
+						FROM ptnrtyperelation R
+						GROUP BY R.partnerid
+				) T ON P.id = T.partnerid 
+				LEFT JOIN partnerlocation L ON P.id = L.partnerid
+				LEFT JOIN partneroh PO ON P.id = PO.partnerid
+				WHERE TRUE ${filterClause}
+				LIMIT ?, ?;
 				`,
 				[...filterValues, offset * limit, limit],
 			);
@@ -98,6 +101,15 @@ namespace PartnerService {
 							(row.reviews + row.googlereviews) || 0,
 					count: row.reviews + row.googlereviews,
 				},
+				opened: isCurrentlyOpened([
+					row.sunoh,
+					row.monoh,
+					row.tueoh,
+					row.wedoh,
+					row.thuoh,
+					row.frioh,
+					row.satoh,
+				]),
 			})),
 		};
 	};

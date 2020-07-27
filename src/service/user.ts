@@ -63,14 +63,14 @@ namespace UserService {
 		return {
 			reviews: result.map((row: any) => ({
 				partner: {
-					id: row.partnerid,
+					id: `${row.partnerid}`,
 					name: row.name,
 					image:
 						partnerImagesToReferences(row.partnerid, row.partnerimages)[0] ||
 						null,
 				},
 				review: {
-					id: row.reviewid,
+					id: `${row.reviewid}`,
 					rate: row.rate,
 					images: reviewImagesToReferences(
 						row.partnerid,
@@ -103,7 +103,7 @@ namespace UserService {
 
 		return {
 			questions: result.map((row: any) => ({
-				id: row.id,
+				id: `${row.id}`,
 				title: row.title,
 				answers: row.answers,
 				keywords: row.keywords.split(','),
@@ -138,16 +138,19 @@ namespace UserService {
 
 		return {
 			answers: result.map((row: any) => ({
-				id: row.id,
+				id: `${row.id}`,
 				user: {
-					id: row.userid,
+					id: `${row.userid}`,
 					name: row.name,
 					email: row.email,
 					picture: row.picture,
 				},
-				title: row.title,
-				answers: row.answers,
-				keywords: row.keywords.split(','),
+				question: {
+					id: `${row.questionid}`,
+					title: row.title,
+					answers: row.answers,
+					keywords: row.keywords.split(','),
+				},
 			})),
 		};
 	};

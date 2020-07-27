@@ -260,14 +260,19 @@ paths:
                         picture:
                           type: string
                           nullable: true
-                    title:
-                      type: string
-                    answers:
-                      type: integer
-                    keywords:
-                      type: array
-                      items:
-                        type: string
+                    question:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        title:
+                          type: string
+                        answers:
+                          type: integer
+                        keywords:
+                          type: array
+                          items:
+                            type: string
         default:
           $ref: '#/responses/InternalServerError'
 
@@ -322,6 +327,9 @@ paths:
                       nullable: true
                     review:
                       $ref: '#/definitions/ReviewSummary'
+                    opened:
+                      type: boolean
+                      nullable: true
         default:
           $ref: '#/responses/InternalServerError'
 
