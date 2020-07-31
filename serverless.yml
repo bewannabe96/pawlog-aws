@@ -7,7 +7,6 @@ plugins:
   - serverless-webpack
   - serverless-offline
   - serverless-apigw-binary
-  - serverless-plugin-additional-stacks
 
 custom:
   serverless-offline:
@@ -24,10 +23,6 @@ custom:
   apigwBinary:
     types:
       - image/*
-  additionalStacks:
-    vpc: ${file(./stack/vpc.yml):vpc}
-    storage: ${file(./stack/storage.yml):storage}
-    cognito: ${file(./stack/cognito.yml):cognito}
 
 provider:
   name: aws
@@ -60,8 +55,8 @@ provider:
             - '/*'
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
-    # DB_HOST: !ImportValue PawlogRDSEndpoint
-    DB_HOST: 127.0.0.1
+    DB_HOST: !ImportValue PawlogRDSEndpoint
+    # DB_HOST: 127.0.0.1
     DB_NAME: pawlog
     DB_USER: api
     DB_PSWD: aNDXJs3WGqUgXcJAXFcGG7xuB35eVV
