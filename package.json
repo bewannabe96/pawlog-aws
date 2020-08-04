@@ -1,12 +1,10 @@
 {
-	"name": "pawlog-aws",
+	"name": "pawlog-api",
 	"version": "1.0.0",
-	"description": "Serverless webpack example using Typescript",
+	"description": "Serverless webpack using Typescript",
 	"repository": "https://github.com/rnjssh96/pawlog-aws.git",
 	"main": "handler.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
+	"scripts": {},
 	"dependencies": {
 		"@types/jsonwebtoken": "^8.3.9",
 		"@types/jwk-to-pem": "^2.0.0",
@@ -18,7 +16,6 @@
 		"jsonwebtoken": "^8.5.1",
 		"jwk-to-pem": "^2.0.3",
 		"serverless-mysql": "^1.5.3",
-		"serverless-plugin-additional-stacks": "^1.4.0",
 		"sharp": "^0.25.2",
 		"source-map-support": "^0.5.16",
 		"typescript": "^3.8.3"

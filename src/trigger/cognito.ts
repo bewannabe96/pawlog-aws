@@ -1,6 +1,6 @@
 import { CognitoUserPoolTriggerHandler } from 'aws-lambda';
 
-import UserService from '../service/user';
+import mysqlConn from '../util/mysql';
 
 // onConfirmation
 export const onConfirmation: CognitoUserPoolTriggerHandler = async (
@@ -21,10 +21,27 @@ export const onConfirmation: CognitoUserPoolTriggerHandler = async (
 	if (provider === 'Facebook') picture = JSON.parse(picture).data.url;
 
 	try {
-		await UserService.createUser(sub, email, name, picture);
+		await _createUser(sub, email, name, picture);
 		callback(null, event);
 	} catch (error) {
 		console.log(error);
 		callback(error);
 	}
+};
+
+export const _createUser = async (
+	sub: string,
+	email: string,
+	name: string,
+	picture: string,
+) => {
+	let transaction = mysqlConn.transaction();
+
+	transaction = transaction.query(
+		'INSERT INTO user (sub, email, name, picture) VALUES (?, ?, ?, ?);',
+		[sub, email, name, picture],
+	);
+
+	await transaction.commit();
+	mysqlConn.end();
 };

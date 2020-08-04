@@ -1,5 +1,5 @@
 listPartners:
-  handler: src/api/partners.listPartners
+  handler: src/lambda/partners/listPartners.handler
   events:
     - http:
         path: partners
@@ -7,7 +7,7 @@ listPartners:
         cors: true
 
 createPartner:
-  handler: src/api/partners.createPartner
+  handler: src/lambda/partners/createPartner.handler
   events:
     - http:
         path: partners
@@ -16,7 +16,7 @@ createPartner:
         cors: true
 
 getPartnerDetail:
-  handler: src/api/partners.getPartnerDetail
+  handler: src/lambda/partners/getPartnerDetail.handler
   events:
     - http:
         path: partners/{partnerID}
@@ -28,7 +28,7 @@ getPartnerDetail:
               partnerID: true
 
 updatePartnerDetail:
-  handler: src/api/partners.updatePartnerDetail
+  handler: src/lambda/partners/updatePartnerDetail.handler
   events:
     - http:
         path: partners/{partnerID}
@@ -41,7 +41,7 @@ updatePartnerDetail:
               partnerID: true
 
 deletePartner:
-  handler: src/api/partners.deletePartner
+  handler: src/lambda/partners/deletePartner.handler
   events:
     - http:
         path: partners/{partnerID}
@@ -54,7 +54,7 @@ deletePartner:
               partnerID: true
 
 getPartnerImages:
-  handler: src/api/partners.getPartnerImages
+  handler: src/lambda/partners/getPartnerImages.handler
   events:
     - http:
         path: partners/{partnerID}/images
@@ -66,7 +66,7 @@ getPartnerImages:
               partnerID: true
 
 updatePartnerImages:
-  handler: src/api/partners.updatePartnerImages
+  handler: src/lambda/partners/updatePartnerImages.handler
   events:
     - http:
         path: partners/{partnerID}/images
@@ -79,7 +79,7 @@ updatePartnerImages:
               partnerID: true
 
 uploadPartnerImage:
-  handler: src/api/partners.uploadPartnerImage
+  handler: src/lambda/partners/uploadPartnerImage.handler
   events:
     - http:
         path: partners/{partnerID}/images/{uid}
@@ -93,7 +93,7 @@ uploadPartnerImage:
               uid: true
 
 deletePartnerImage:
-  handler: src/api/partners.deletePartnerImage
+  handler: src/lambda/partners/deletePartnerImage.handler
   events:
     - http:
         path: partners/{partnerID}/images/{uid}
@@ -107,7 +107,7 @@ deletePartnerImage:
               uid: true
 
 getPartnerReviews:
-  handler: src/api/partners.getPartnerReviews
+  handler: src/lambda/partners/getPartnerReviews.handler
   events:
     - http:
         path: partners/{partnerID}/reviews
@@ -119,7 +119,7 @@ getPartnerReviews:
               partnerID: true
 
 createPartnerReview:
-  handler: src/api/partners.createPartnerReview
+  handler: src/lambda/partners/createPartnerReview.handler
   events:
     - http:
         path: partners/{partnerID}/reviews
@@ -132,7 +132,7 @@ createPartnerReview:
               partnerID: true
 
 deletePartnerReview:
-  handler: src/api/partners.deletePartnerReview
+  handler: src/lambda/partners/deletePartnerReview.handler
   events:
     - http:
         path: partners/{partnerID}/reviews/{reviewID}
@@ -146,7 +146,7 @@ deletePartnerReview:
               reviewID: true
 
 uploadReviewImage:
-  handler: src/api/partners.uploadReviewImage
+  handler: src/lambda/partners/uploadReviewImage.handler
   events:
     - http:
         path: partners/{partnerID}/reviews/{reviewID}/images/{uid}
@@ -161,7 +161,7 @@ uploadReviewImage:
               uid: true
 
 getPartnerGoogleReviews:
-  handler: src/api/partners.getPartnerGoogleReviews
+  handler: src/lambda/partners/getPartnerGoogleReviews.handler
   events:
     - http:
         path: partners/{partnerID}/googleReviews

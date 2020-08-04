@@ -1,5 +1,5 @@
 listQuestions:
-  handler: src/api/qnas.listQuestions
+  handler: src/lambda/qnas/listQuestions.handler
   events:
     - http:
         path: qnas
@@ -7,7 +7,7 @@ listQuestions:
         cors: true
 
 listWaitingQuestions:
-  handler: src/api/qnas.listWaitingQuestions
+  handler: src/lambda/qnas/listWaitingQuestions.handler
   events:
     - http:
         path: qnas/waitings
@@ -15,7 +15,7 @@ listWaitingQuestions:
         cors: true
 
 createQuestion:
-  handler: src/api/qnas.createQuestion
+  handler: src/lambda/qnas/createQuestion.handler
   events:
     - http:
         path: qnas
@@ -24,7 +24,7 @@ createQuestion:
         cors: true
 
 getQuestionDetail:
-  handler: src/api/qnas.getQuestionDetail
+  handler: src/lambda/qnas/getQuestionDetail.handler
   events:
     - http:
         path: qnas/{questionID}
@@ -36,7 +36,7 @@ getQuestionDetail:
               questionID: true
 
 deleteQuestion:
-  handler: src/api/qnas.deleteQuestion
+  handler: src/lambda/qnas/deleteQuestion.handler
   events:
     - http:
         path: qnas/{questionID}
@@ -49,7 +49,7 @@ deleteQuestion:
               questionID: true
 
 uploadQuestionImage:
-  handler: src/api/qnas.uploadQuestionImage
+  handler: src/lambda/qnas/uploadQuestionImage.handler
   events:
     - http:
         path: qnas/{questionID}/images/{uid}
@@ -63,7 +63,7 @@ uploadQuestionImage:
               uid: true
 
 listAnswers:
-  handler: src/api/qnas.listAnswers
+  handler: src/lambda/qnas/listAnswers.handler
   events:
     - http:
         path: qnas/{questionID}/answers
@@ -75,7 +75,7 @@ listAnswers:
               questionID: true
 
 createAnswer:
-  handler: src/api/qnas.createAnswer
+  handler: src/lambda/qnas/createAnswer.handler
   events:
     - http:
         path: qnas/{questionID}/answers
@@ -88,7 +88,7 @@ createAnswer:
               questionID: true
 
 deleteAnswer:
-  handler: src/api/qnas.deleteAnswer
+  handler: src/lambda/qnas/deleteAnswer.handler
   events:
     - http:
         path: qnas/{questionID}/answers/{answerID}
@@ -102,7 +102,7 @@ deleteAnswer:
               answerID: true
 
 updateAskerChoice:
-  handler: src/api/qnas.updateAskerChoice
+  handler: src/lambda/qnas/updateAskerChoice.handler
   events:
     - http:
         path: qnas/{questionID}/askerChoice

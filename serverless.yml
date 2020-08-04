@@ -1,12 +1,12 @@
 service:
-  name: pawlog-aws
-  app: pawlog-aws
-  org: rnjssh96
+  name: pawlog-api
+  app: pawlog-api
+  org: Pawlog Company Limited
 
 plugins:
+  - serverless-apigw-binary
   - serverless-webpack
   - serverless-offline
-  - serverless-apigw-binary
 
 custom:
   serverless-offline:
@@ -16,10 +16,6 @@ custom:
     includeModules:
       forceExclude:
         - aws-sdk
-    packagerOptions:
-      scripts:
-        - rm -rf node_modules/sharp
-        - npm install --arch=x64 --platform=linux sharp
   apigwBinary:
     types:
       - image/*
@@ -55,21 +51,26 @@ provider:
             - '/*'
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
-    DB_HOST: !ImportValue PawlogRDSEndpoint
-    # DB_HOST: 127.0.0.1
+    # DB_HOST: !ImportValue PawlogRDSEndpoint
+    DB_HOST: 127.0.0.1
     DB_NAME: pawlog
     DB_USER: api
     DB_PSWD: aNDXJs3WGqUgXcJAXFcGG7xuB35eVV
-    PARTNER_IMAGE_BUCKET: !ImportValue PartnerImageBucketName
-    PARTNER_IMAGE_BUCKET_DOMAIN: !ImportValue PartnerImageBucketDomain
-    QNA_IMAGE_BUCKET: !ImportValue QnAImageBucketName
-    QNA_IMAGE_BUCKET_DOMAIN: !ImportValue QnAImageBucketDomain
+    PARTNER_IMAGE_BUCKET: pawlog-partner-image
+    PARTNER_IMAGE_BUCKET_DOMAIN: localhost:4572/s3/pawlog-partner-image
+    QNA_IMAGE_BUCKET: pawlog-qna-image
+    QNA_IMAGE_BUCKET_DOMAIN: localhost:4572/s3/pawlog-qna-image
+    # PARTNER_IMAGE_BUCKET: !ImportValue PartnerImageBucketName
+    # QNA_IMAGE_BUCKET: !ImportValue QnAImageBucketName
+    # PARTNER_IMAGE_BUCKET_DOMAIN: !ImportValue PartnerImageBucketDomain
+    # QNA_IMAGE_BUCKET_DOMAIN: !ImportValue QnAImageBucketDomain
+
 functions:
-  - ${file(./resource/function/authorizer.yml)}
+  - ${file(./function/authorizer.yml)}
 
-  - ${file(./resource/function/trigger/cognito.yml)}
+  - ${file(./function/trigger/cognito.yml)}
 
-  - ${file(./resource/function/api/config.yml)}
-  - ${file(./resource/function/api/user.yml)}
-  - ${file(./resource/function/api/partner.yml)}
-  - ${file(./resource/function/api/qna.yml)}
+  - ${file(./function/api/config.yml)}
+  - ${file(./function/api/user.yml)}
+  - ${file(./function/api/partner.yml)}
+  - ${file(./function/api/qna.yml)}

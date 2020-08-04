@@ -4,11 +4,9 @@
 node_modules
 jspm_packages
 
-# Serverless directories
-.serverless
-
-# Webpack directories
-.webpack
-
 # Development
-.dynamodb
+
+# Build
+sam-template.yml
+.serverless
+.webpack

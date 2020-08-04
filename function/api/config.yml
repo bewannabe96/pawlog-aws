@@ -1,5 +1,5 @@
 listAreaCodes:
-  handler: src/api/configs.listAreaCodes
+  handler: src/lambda/configs/listAreaCodes.handler
   events:
     - http:
         path: configs/areas
@@ -7,7 +7,7 @@ listAreaCodes:
         cors: true
 
 listPartnerTypes:
-  handler: src/api/configs.listPartnerTypes
+  handler: src/lambda/configs/listPartnerTypes.handler
   events:
     - http:
         path: configs/partnerTypes
@@ -15,7 +15,7 @@ listPartnerTypes:
         cors: true
 
 listQuestionKeywords:
-  handler: src/api/configs.listQuestionKeywords
+  handler: src/lambda/configs/listQuestionKeywords.handler
   events:
     - http:
         path: configs/questionKeywords

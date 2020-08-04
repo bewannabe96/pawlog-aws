@@ -1,5 +1,5 @@
 getUser:
-  handler: src/api/users.getUser
+  handler: src/lambda/users/getUser.handler
   events:
     - http:
         path: users
@@ -12,7 +12,7 @@ getUser:
               sub: true
 
 getUserReviews:
-  handler: src/api/users.getUserReviews
+  handler: src/lambda/users/getUserReviews.handler
   events:
     - http:
         path: users/{userID}/reviews
@@ -25,7 +25,7 @@ getUserReviews:
               userID: true
 
 getUserQuestions:
-  handler: src/api/users.getUserQuestions
+  handler: src/lambda/users/getUserQuestions.handler
   events:
     - http:
         path: users/{userID}/qnas/questions
@@ -38,7 +38,7 @@ getUserQuestions:
               userID: true
 
 getUserAnswers:
-  handler: src/api/users.getUserAnswers
+  handler: src/lambda/users/getUserAnswers.handler
   events:
     - http:
         path: users/{userID}/qnas/answers
